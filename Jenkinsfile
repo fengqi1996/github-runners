@@ -1,18 +1,30 @@
+def gitlab_url = 'https://gitlab.com/chan1992241/likecard.git'
+def build_tag
+
 pipeline {
     agent any
-
+    environment {
+        BUILD_NAME = credentials('Demo.CICD-Build-Name')
+    }
     stages {
-        stage('Hello') {
+        stage('Clone') {
             steps {
                 checkout([$class: 'GitSCM',
                     branches: [[name: '*/main' ]],
                     extensions: scm.extensions,
                     userRemoteConfigs: [[
-                        url: 'https://gitlab.com/chan1992241/likecard.git',
+                        url: gitlab_url,
                         credentialsId: 'Likecard-GitLab-Repo-Cred'
                     ]]
                 ])
                 sh "ls -la"
+            }
+        }
+        stage('Build') {
+            steps {
+                dir("Demo.CICD") {
+                    sh "docker build -t ${BUILD_NAME}:${BUILD_NUMBER} ."
+                }
             }
         }
     }
