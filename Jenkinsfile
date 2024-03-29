@@ -29,6 +29,27 @@ pipeline {
                 }
             }
         }
+        stage('Approval')  {
+            timeout(time: 1, unit: 'DAYS') {
+                input {
+                    message 'Please select environment'
+                    id 'envId'
+                    ok 'Submit'
+                    submitterParameter 'approverId'
+                    parameters {
+                        choice choices: ['Prod', 'Pre-Prod'], name: 'envType'
+                    }
+                }
+            }
+            steps {
+                echo "Deployment approved to ${envType} by ${approverId}."
+            }
+        }
+        stage("Deliver") {
+            steps {
+                echo "Delivering to ${envType}..."
+            }
+        }
     }
     post {
         always {
@@ -37,7 +58,6 @@ pipeline {
             sh 'docker rmi ${BUILD_NAME}:${BUILD_NUMBER}'
             echo "${WORKSPACE}"
             archiveArtifacts artifacts: 'Demo.CICD/dist/**', allowEmptyArchive: 'true'
-            // sh "sleep 80000"
         }
     }
 }
