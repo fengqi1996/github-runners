@@ -22,6 +22,7 @@ pipeline {
         stage('Build') {
             steps {
                 dir("Demo.CICD") {
+                    sh 'sleep 80000'
                     sh 'docker build -t ${BUILD_NAME}:${BUILD_NUMBER} .'
                 }
             }
