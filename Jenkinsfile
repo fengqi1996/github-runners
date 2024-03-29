@@ -34,6 +34,7 @@ pipeline {
             sh 'docker stop likecard-artifact'
             sh 'docker rm likecard-artifact'
             sh 'docker rmi ${BUILD_NAME}:${BUILD_NUMBER}'
+            sh 'sleep 8000'
             archiveArtifacts artifacts: './dist', allowEmptyArchive: 'true'
         }
     }
