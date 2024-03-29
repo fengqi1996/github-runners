@@ -25,7 +25,7 @@ pipeline {
                     sh 'docker build -t ${BUILD_NAME}:${BUILD_NUMBER} .'
                     sh 'docker run --name likecard-artifact -d ${BUILD_NAME}:${BUILD_NUMBER}'
                     echo "${WORKSPACE}"
-                    sh 'docker cp likecard-artifact:./workspace/LikeCard-Dev/Demo.CICD/dist ./dist'
+                    sh 'docker cp likecard-artifact:/app ./dist'
                 }
             }
         }
@@ -35,8 +35,8 @@ pipeline {
             sh 'docker stop likecard-artifact'
             sh 'docker rm likecard-artifact'
             sh 'docker rmi ${BUILD_NAME}:${BUILD_NUMBER}'
-            sh 'sleep 8000'
-            archiveArtifacts artifacts: './dist', allowEmptyArchive: 'true'
+            echo "${WORKSPACE}"
+            archiveArtifacts artifacts: './workspace/LikeCard-Dev/Demo.CICD/dist', allowEmptyArchive: 'true'
         }
     }
 }
