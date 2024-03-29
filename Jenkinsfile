@@ -36,8 +36,8 @@ pipeline {
             sh 'docker rm likecard-artifact'
             sh 'docker rmi ${BUILD_NAME}:${BUILD_NUMBER}'
             echo "${WORKSPACE}"
-            archiveArtifacts artifacts: '/home/jenkins/workspace/LikeCard-Dev/Demo.CICD/dist', allowEmptyArchive: 'true'
-            sh "sleep 80000"
+            archiveArtifacts artifacts: 'Demo.CICD/dist/**', allowEmptyArchive: 'true'
+            // sh "sleep 80000"
         }
     }
 }
