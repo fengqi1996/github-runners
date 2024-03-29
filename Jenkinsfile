@@ -24,7 +24,8 @@ pipeline {
                 dir("Demo.CICD") {
                     sh 'docker build -t ${BUILD_NAME}:${BUILD_NUMBER} .'
                     sh 'docker run --name likecard-artifact -d ${BUILD_NAME}:${BUILD_NUMBER}'
-                    sh 'docker cp likecard-artifact:/app ./dist'
+                    echo "${WORKSPACE}"
+                    sh 'docker cp likecard-artifact:./workspace/LikeCard-Dev/Demo.CICD/dist ./dist'
                 }
             }
         }
