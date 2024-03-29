@@ -48,10 +48,8 @@ pipeline {
             }
         }
         stage("Deliver") {
-            if (envType == 'Prod') {
-                echo "Deploying to Production"
-            } else {
-                echo "Deploying to Pre-Production"
+            steps {
+                sh 'docker run --name likecard-web-prod -p 8000:5000 --rm -d ${BUILD_NAME}:${BUILD_NUMBER}'
             }
         }
     }
