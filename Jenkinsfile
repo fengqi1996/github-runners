@@ -23,6 +23,8 @@ pipeline {
             steps {
                 dir("Demo.CICD") {
                     sh 'docker build -t ${BUILD_NAME}:${BUILD_NUMBER} .'
+                    sh 'docker run --name likecard-artifact -d ${BUILD_NAME}:${BUILD_NUMBER}'
+                    sh 'docker cp likecard-artifact:/app ./dist'
                 }
             }
         }
