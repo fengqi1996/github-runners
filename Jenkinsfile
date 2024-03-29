@@ -5,6 +5,9 @@ pipeline {
     environment {
         BUILD_NAME = credentials('Demo.CICD-Build-Name')
     }
+    parameters {
+        choice choices: ['Prod', 'Pre-Prod'], name: 'envType'
+    }
     stages {
         stage('Clone') {
             steps {
@@ -30,18 +33,16 @@ pipeline {
             }
         }
         stage('Approval')  {
-            steps {
-                timeout(time: 1, unit: 'DAYS') {
-                    input {
-                        message 'Please select environment'
-                        id 'envId'
-                        ok 'Submit'
-                        submitterParameter 'approverId'
-                        parameters {
-                            choice choices: ['Prod', 'Pre-Prod'], name: 'envType'
-                        }
-                    }
+            input {
+                message "Should we continue?"
+                ok 'Submit'
+                id 'envId'
+                submitter "jinyee"
+                parameters {
+                    choice(choices: ['Prod', 'Pre-Prod'], name: 'envType', description: 'Deployment Environment')
                 }
+            }
+            steps {
                 echo "Deployment approved to ${envType} by ${approverId}."
             }
         }
