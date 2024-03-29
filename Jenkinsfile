@@ -48,12 +48,10 @@ pipeline {
             }
         }
         stage("Deliver") {
-            steps {
-                if (envType == 'Prod') {
-                    echo "Deploying to Production"
-                } else {
-                    echo "Deploying to Pre-Production"
-                }
+            if (envType == 'Prod') {
+                echo "Deploying to Production"
+            } else {
+                echo "Deploying to Pre-Production"
             }
         }
     }
