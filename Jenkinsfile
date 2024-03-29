@@ -44,16 +44,16 @@ pipeline {
                 }
             }
             steps {
-                emailext mimeType: 'text/html',
-                    subject: "APPROVAL RQD [JENKINS] ${currentBuild.fullDisplayName}",
-                    to: "chan1992241@gmail.com",
-                    body: """<a href="${BUILD_URL}input">click to approve</a>"""
                 echo "Deployment approved to ${envType} by ${approverId}."
             }
         }
         stage("Deliver") {
             steps {
-                echo "Delivering to ${envType}..."
+                if (envType == 'Prod') {
+                    echo "Deploying to Production"
+                } else {
+                    echo "Deploying to Pre-Production"
+                }
             }
         }
     }
