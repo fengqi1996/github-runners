@@ -1,5 +1,4 @@
 def gitlab_url = 'https://gitlab.com/chan1992241/likecard.git'
-def build_tag
 
 pipeline {
     agent any
@@ -23,7 +22,7 @@ pipeline {
         stage('Build') {
             steps {
                 dir("Demo.CICD") {
-                    sh "docker build -t ${BUILD_NAME}:${BUILD_NUMBER} ."
+                    sh 'docker build -t ${BUILD_NAME}:${BUILD_NUMBER} .'
                 }
             }
         }
