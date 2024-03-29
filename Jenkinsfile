@@ -26,7 +26,7 @@ pipeline {
             steps {
                 dir("Demo.CICD") {
                     sh 'docker build -t ${BUILD_NAME}:${BUILD_NUMBER} .'
-                    sh 'docker run --name likecard-artifact -d ${BUILD_NAME}:${BUILD_NUMBER}'
+                    sh 'docker run --name likecard-artifact --rm -d ${BUILD_NAME}:${BUILD_NUMBER}'
                     echo "${WORKSPACE}"
                     sh 'docker cp likecard-artifact:/app ./dist'
                 }
@@ -44,6 +44,10 @@ pipeline {
                 }
             }
             steps {
+                emailext mimeType: 'text/html',
+                    subject: "APPROVAL RQD [JENKINS] ${currentBuild.fullDisplayName}",
+                    to: "chan1992241@gmail.com",
+                    body: """<a href="${BUILD_URL}input">click to approve</a>"""
                 echo "Deployment approved to ${envType} by ${approverId}."
             }
         }
@@ -56,7 +60,6 @@ pipeline {
     post {
         always {
             sh 'docker stop likecard-artifact'
-            sh 'docker rm likecard-artifact'
             sh 'docker rmi ${BUILD_NAME}:${BUILD_NUMBER}'
             echo "${WORKSPACE}"
             archiveArtifacts artifacts: 'Demo.CICD/dist/**', allowEmptyArchive: 'true'
