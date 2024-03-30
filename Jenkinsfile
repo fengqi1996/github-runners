@@ -50,7 +50,7 @@ pipeline {
         stage("Deliver") {
             steps {
                 sh 'docker stop likecard-web-prod || true && docker rm likecard-web-prod || true'
-                sh 'docker run --name likecard-web-prod -p 8000:5000 --rm -d ${BUILD_NAME}:${BUILD_NUMBER}'
+                sh 'docker run --name likecard-web-prod -p 5000:5000 --rm -d ${BUILD_NAME}:${BUILD_NUMBER}'
             }
         }
     }

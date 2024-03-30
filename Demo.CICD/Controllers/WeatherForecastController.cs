@@ -29,5 +29,12 @@ namespace Demo.CICD.Controllers
             })
             .ToArray();
         }
+
+        [HttpGet("/", Name = "GetRoot")]
+        public IActionResult GetRoot()
+        {
+            var response = new { Message = "Welcome to the Weather Forecast API!" };
+            return Ok(response);
+        }
     }
 }
