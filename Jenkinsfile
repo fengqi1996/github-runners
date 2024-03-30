@@ -4,6 +4,8 @@ pipeline {
     agent any
     environment {
         BUILD_NAME = credentials('Demo.CICD-Build-Name')
+        SWR_AK = credentials('Demo.CICD-SWR-AK')
+        SWR_SK = credentials('Demo.CICD-SWR-SK')
     }
     parameters {
         choice choices: ['Prod', 'Pre-Prod'], name: 'envType'
@@ -32,6 +34,12 @@ pipeline {
                 }
             }
         }
+        stage('Push Image'){
+            steps {
+                sh 'docker login -u ${SWR_AK} -p ${SWR_SK} swr.ap-southeast-3.myhuaweicloud.com'
+                sh 'docker push ${BUILD_NAME}:${BUILD_NUMBER}'
+            }
+        }
         stage('Approval')  {
             input {
                 message "Should we continue?"
@@ -58,6 +66,7 @@ pipeline {
         always {
             sh 'docker stop likecard-artifact'
             sh 'docker rmi ${BUILD_NAME}:${BUILD_NUMBER} || true'
+            sh 'docker image prune -f'
             echo "${WORKSPACE}"
             archiveArtifacts artifacts: 'Demo.CICD/dist/**', allowEmptyArchive: 'true'
         }
