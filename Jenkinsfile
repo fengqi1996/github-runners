@@ -49,6 +49,7 @@ pipeline {
         }
         stage("Deliver") {
             steps {
+                sh 'docker stop likecard-web-prod || true && docker rm likecard-web-prod || true'
                 sh 'docker run --name likecard-web-prod -p 8000:5000 --rm -d ${BUILD_NAME}:${BUILD_NUMBER}'
             }
         }
@@ -56,7 +57,7 @@ pipeline {
     post {
         always {
             sh 'docker stop likecard-artifact'
-            sh 'docker rmi ${BUILD_NAME}:${BUILD_NUMBER}'
+            sh 'docker rmi ${BUILD_NAME}:${BUILD_NUMBER} || true'
             echo "${WORKSPACE}"
             archiveArtifacts artifacts: 'Demo.CICD/dist/**', allowEmptyArchive: 'true'
         }
