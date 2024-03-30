@@ -1,93 +1,138 @@
-# DemoCICD
+# Step By Step Jenkins CI/CD Guide with Huawei Cloud ECS.
+1.	Programming language or framework to used is (.Net)
+2.	CI/CD tool will be used (Jenkins)
+3.	Source control management tool (GitLab)
+4.	CI/CD environment (ECS)
+5.	Application Environment (ECS)
+6.	Special Request toward CICD pipeline
+  -	Need to get manual approval before deploy to production environment
+  -	Store the build artifact for each build. 
 
+## 1. Infrastucture
+Prepare related infrastucture using terraform
+```bash
+export HW_ACCESS_KEY="<- Your Huawei Access Key ->"
+export HW_SECRET_KEY="<- Your Huawei Secret Key ->"
+export PROJECT_ID="<- Your Project ID ->"
+export PASSWORD="<- Your ECS password, will used for SSH ->"
 
-
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
-
+terraform init
+TF_VAR_secret_key=$HW_SECRET_KEY TF_VAR_access_key=$HW_ACCESS_KEY TF_VAR_password=$PASSWORD TF_VAR_project_ID=$PROJECT_ID terraform apply
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/softwarus/democicd.git
-git branch -M main
-git push -uf origin main
+
+## 2. Jenkins Deployment
+```bash
+#1. Install docker 
+dnf install docker
+systemctl start docker
+
+#2. Deploy Jenkins To Docker
+docker network create jenkins
+docker run --name jenkins-docker --rm --detach \
+  --privileged --network jenkins --network-alias docker \
+  --env DOCKER_TLS_CERTDIR=/certs \
+  --volume jenkins-docker-certs:/certs/client \
+  --volume jenkins-data:/var/jenkins_home \
+  --publish 2376:2376 \
+  --publish 8000:8000 \
+  --publish 5000:5000 \
+  docker:dind
+
+docker run --name jenkins-blueocean --restart=on-failure --detach \
+  --network jenkins --env DOCKER_HOST=tcp://docker:2376 \
+  --env DOCKER_CERT_PATH=/certs/client --env DOCKER_TLS_VERIFY=1 \
+  --volume jenkins-data:/var/jenkins_home \
+  --volume jenkins-docker-certs:/certs/client:ro \
+  --privileged \
+  --user=root --publish 8080:8080 --publish 50000:50000 swr.ap-southeast-3.myhuaweicloud.com/test-fq/likecard-jenkins:latest
+
+# 3. Get "first time login" password
+docker exec jenkins-blueocean cat /var/jenkins_home/secrets/initialAdminPassword
+
+# 4. Copy the password to your jenkins browser.
+# 5. Install default plugin
+# 6. Create first admin user
+```
+![alt text](./assets/image-16.png)
+![alt text](./assets/image.png)
+![alt text](./assets/image-1.png)
+![alt text](./assets/image-2.png)
+
+
+## Jenkins Agent 
+First, we will turn off of using node executor, which this action will not allow to run pipeline together with Jenkins application, instead we will run pipeline on isolate environment call agents which we will configure in next few step. This is the best practice recommended by Jenkins to improve security measure.
+
+To turn off node executor follow below figure. 
+![alt text](./assets/image-11.png)
+
+Then we need to create agent to run pipeline. First, we need to install relative Jenkins plugin.Follow step from below figure.
+![alt text](./assets/image-3.png)
+
+Then, we need to configure our agent. 
+![alt text](./assets/image-4.png)
+```bash
+# Get Docker client cert data for 
+docker exec jenkins-blueocean cat /certs/client/key.pem
+docker exec jenkins-blueocean cat /certs/client/cert.pem
+docker exec jenkins-blueocean cat /certs/client/ca.pem
+```
+![alt text](./assets/image-5.png)
+
+```bash
+# Agent Mounts
+type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock
+type=bind,src=/usr/local/bin/docker,dst=/usr/local/bin/docker
 ```
 
-## Integrate with your tools
+## Pipeline Creation.
+We have two requirement during pipeline design, first is store the dotnet artifact and request for approval before make deployment to production.
 
-- [ ] [Set up project integrations](https://gitlab.com/softwarus/democicd/-/settings/integrations)
+Before we create the pipeline, we first need to interconnect GitLab with this pipeline. Follow the figure below to perform this configuration.
 
-## Collaborate with your team
+![alt text](./assets/image-6.png)
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+Then you can start creating your first pipeline. Remember the pipeline also need to connect to your gitlab repository. Follow the figure below.
 
-## Test and Deploy
+![alt text](./assets/image-7.png)
 
-Use the built-in continuous integration in GitLab.
+Then we need to configure the credentials used in Jenkinsfile. Follow the figure below.
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
 
-***
+```bash
+# Before create docker in docker, you need to add 'docker' user group
+# Ref: https://stackoverflow.com/questions/47854463/docker-got-permission-denied-while-trying-to-connect-to-the-docker-daemon-socke
+# Ref: https://www.digitalocean.com/community/questions/how-to-fix-docker-got-permission-denied-while-trying-to-connect-to-the-docker-daemon-socket
 
-# Editing this README
+docker network create jenkins
+docker run --name jenkins-docker --rm --detach \
+  --privileged --network jenkins --network-alias docker \
+  --env DOCKER_TLS_CERTDIR=/certs \
+  --volume jenkins-docker-certs:/certs/client \
+  --volume jenkins-data:/var/jenkins_home \
+  --publish 2376:2376 \
+  --publish 8000:5000 \
+  docker:dind
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+docker run --name jenkins-blueocean --restart=on-failure --detach \
+  --network jenkins --env DOCKER_HOST=tcp://docker:2376 \
+  --env DOCKER_CERT_PATH=/certs/client --env DOCKER_TLS_VERIFY=1 \
+  --volume jenkins-data:/var/jenkins_home \
+  --volume jenkins-docker-certs:/certs/client:ro \
+  --privileged \
+  --user=root --publish 8080:8080 --publish 50000:50000 swr.ap-southeast-3.myhuaweicloud.com/test-fq/likecard-jenkins:latest
 
-## Suggestions for a good README
+docker exec d6c8b4e4692aec142b1375a1852ef507a6ff3bcca4eb666e17bf9a32e88a3a8c cat /var/jenkins_home/secrets/initialAdminPassword
+```
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
 
-## Name
-Choose a self-explaining name for your project.
+## Sending Email 
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+```bash
+# https://stackoverflow.com/questions/30185988/jenkins-email-sending-fails
+Email sending failed, because of SMTP server not configure
+```
+```
+docker build -t ap-southeast-3.myhuaweicloud.com/test-fq/likecard-jenkins:latest .
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+jenkins/agent:latest-alpine3.19-jdk21
+```
