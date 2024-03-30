@@ -36,7 +36,7 @@ pipeline {
         }
         stage('Push Image'){
             steps {
-                sh 'docker login -u ${SWR_AK} -p ${SWR_SK} swr.ap-southeast-3.myhuaweicloud.com'
+                sh 'docker login -u ap-southeast-3@${SWR_AK} -p ${SWR_SK} swr.ap-southeast-3.myhuaweicloud.com'
                 sh 'docker push ${BUILD_NAME}:${BUILD_NUMBER}'
             }
         }
