@@ -52,7 +52,13 @@ pipeline {
                 }
             }
             steps {
-                echo "Deployment approved to ${envType} by ${approverId}."
+                script {
+                    // Set the chosen environment type as a global environment variable
+                    env.envType = input message: 'Confirm deployment environment:', 
+                                        parameters: [choice(name: 'envType', choices: ['Prod', 'Pre-Prod'], description: 'Deployment Environment')]
+                    
+                    echo "Deployment approved to ${env.envType} by ${approverId}."
+                }
             }
         }
         stage("Delivery to prod") {
@@ -62,6 +68,7 @@ pipeline {
                 }
             }
             steps {
+                echo "Deploying to ${env.envType}..."
                 sh 'docker stop likecard-web-prod || true && docker rm likecard-web-prod || true'
                 sh 'docker run --name likecard-web-prod -p 5000:80 --rm -d ${BUILD_NAME}:${BUILD_NUMBER}'
             }
@@ -73,6 +80,7 @@ pipeline {
                 }
             }
             steps {
+                echo "Deploying to ${env.envType}..."
                 sh 'docker stop likecard-web-pre-prod || true && docker rm likecard-web-pre-prod || true'
                 sh 'docker run --name likecard-web-pre-prod -p 8000:80 --rm -d ${BUILD_NAME}:${BUILD_NUMBER}'
             }
