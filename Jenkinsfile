@@ -55,10 +55,26 @@ pipeline {
                 echo "Deployment approved to ${envType} by ${approverId}."
             }
         }
-        stage("Deliver") {
+        stage("Delivery to prod") {
+            when {
+                expression {
+                    return env.envType == 'Prod'
+                }
+            }
             steps {
                 sh 'docker stop likecard-web-prod || true && docker rm likecard-web-prod || true'
                 sh 'docker run --name likecard-web-prod -p 5000:80 --rm -d ${BUILD_NAME}:${BUILD_NUMBER}'
+            }
+        }
+        stage("Delivery to pre-prod") {
+            when {
+                expression {
+                    return env.envType == 'Pre-Prod'
+                }
+            }
+            steps {
+                sh 'docker stop likecard-web-pre-prod || true && docker rm likecard-web-pre-prod || true'
+                sh 'docker run --name likecard-web-pre-prod -p 8000:80 --rm -d ${BUILD_NAME}:${BUILD_NUMBER}'
             }
         }
     }
