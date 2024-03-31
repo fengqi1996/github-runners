@@ -84,17 +84,15 @@ pipeline {
             sh 'docker rmi ${BUILD_NAME}:${BUILD_NUMBER} || true'
             sh 'docker image prune -f'
             echo "${WORKSPACE}"
-            archiveArtifacts artifacts: 'Demo.CICD/dist/**', allowEmptyArchive: 'true'
-            def messageBody = """
-                <p>Hi,</p>
-                <p>Deployment approval is required.</p>
-                <p>Please visit the <a href="${BUILD_URL}">Jenkins job</a> to approve.</p>
-                """
-            
+            archiveArtifacts artifacts: 'Demo.CICD/dist/**', allowEmptyArchive: 'true'            
             // Trigger email for approval with job URL
             emailext(
                 subject: "Approval Needed for Deployment",
-                body: messageBody,
+                body: """
+                <p>Hi,</p>
+                <p>Deployment approval is required.</p>
+                <p>Please visit the <a href="${BUILD_URL}">Jenkins job</a> to approve.</p>
+                """,
                 from: 'chan1992241@gmail.com',
                 to: 'chan1992241@gmail.com',
                 replyTo: 'chan1992241@gmail.com',
