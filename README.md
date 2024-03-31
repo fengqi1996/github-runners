@@ -27,22 +27,10 @@ dnf install docker
 systemctl start docker
 
 #2. Deploy Jenkins To Docker
-docker network create jenkins
-docker run --name jenkins-docker --rm --detach \
-  --privileged --network jenkins --network-alias docker \
-  --env DOCKER_TLS_CERTDIR=/certs \
-  --volume jenkins-docker-certs:/certs/client \
-  --volume jenkins-data:/var/jenkins_home \
-  --publish 2376:2376 \
-  --publish 8000:8000 \
-  --publish 5000:5000 \
-  docker:dind
-
 docker run --name jenkins-blueocean --restart=on-failure --detach \
-  --network jenkins --env DOCKER_HOST=tcp://docker:2376 \
-  --env DOCKER_CERT_PATH=/certs/client --env DOCKER_TLS_VERIFY=1 \
+  --network jenkins \
   --volume jenkins-data:/var/jenkins_home \
-  --volume jenkins-docker-certs:/certs/client:ro \
+  --volume /var/run/docker.sock:/var/run/docker.sock \
   --privileged \
   --user=root --publish 8080:8080 --publish 50000:50000 swr.ap-southeast-3.myhuaweicloud.com/test-fq/likecard-jenkins:latest
 
@@ -69,19 +57,14 @@ Then we need to create agent to run pipeline. First, we need to install relative
 ![alt text](./assets/image-3.png)
 
 Then, we need to configure our agent. 
-![alt text](./assets/image-4.png)
-```bash
-# Get Docker client cert data for 
-docker exec jenkins-blueocean cat /certs/client/key.pem
-docker exec jenkins-blueocean cat /certs/client/cert.pem
-docker exec jenkins-blueocean cat /certs/client/ca.pem
-```
+![alt text](./assets/image-8.png)
+
 ![alt text](./assets/image-5.png)
 
 ```bash
 # Agent Mounts
 type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock
-type=bind,src=/usr/local/bin/docker,dst=/usr/local/bin/docker
+type=bind,src=/usr/bin/docker,dst=/usr/bin/docker
 ```
 
 ## Pipeline Creation.
@@ -95,44 +78,17 @@ Then you can start creating your first pipeline. Remember the pipeline also need
 
 ![alt text](./assets/image-7.png)
 
-Then we need to configure the credentials used in Jenkinsfile. Follow the figure below.
+Then you need to configure your gitlab repo on how to trigger the pipeline when there is commit. Follow below figure.
 
+![alt text](./assets/image-10.png)
 
-```bash
-# Before create docker in docker, you need to add 'docker' user group
-# Ref: https://stackoverflow.com/questions/47854463/docker-got-permission-denied-while-trying-to-connect-to-the-docker-daemon-socke
-# Ref: https://www.digitalocean.com/community/questions/how-to-fix-docker-got-permission-denied-while-trying-to-connect-to-the-docker-daemon-socket
+Before proceeds, I will roughly talk about what the pipeline does. The pipeline will clone the latest push commit from GitLab, build the image, push to docker registry (SWR) then deploy to environment according to approval. Lastly, since my gitlab repository is in private mode, so I need to add credential to login to gitlab also.
 
-docker network create jenkins
-docker run --name jenkins-docker --rm --detach \
-  --privileged --network jenkins --network-alias docker \
-  --env DOCKER_TLS_CERTDIR=/certs \
-  --volume jenkins-docker-certs:/certs/client \
-  --volume jenkins-data:/var/jenkins_home \
-  --publish 2376:2376 \
-  --publish 8000:5000 \
-  docker:dind
+Then we need to configure the credentials used in Jenkinsfile include docker registry credential and build name. Below is the figure we needed.
 
-docker run --name jenkins-blueocean --restart=on-failure --detach \
-  --network jenkins --env DOCKER_HOST=tcp://docker:2376 \
-  --env DOCKER_CERT_PATH=/certs/client --env DOCKER_TLS_VERIFY=1 \
-  --volume jenkins-data:/var/jenkins_home \
-  --volume jenkins-docker-certs:/certs/client:ro \
-  --privileged \
-  --user=root --publish 8080:8080 --publish 50000:50000 swr.ap-southeast-3.myhuaweicloud.com/test-fq/likecard-jenkins:latest
+![alt text](./assets/image-9.png)
 
-docker exec d6c8b4e4692aec142b1375a1852ef507a6ff3bcca4eb666e17bf9a32e88a3a8c cat /var/jenkins_home/secrets/initialAdminPassword
-```
+Then you can make a commit in your gitlab to check your pipeline execution. That all for this, thank you.
 
-
-## Sending Email 
-
-```bash
-# https://stackoverflow.com/questions/30185988/jenkins-email-sending-fails
-Email sending failed, because of SMTP server not configure
-```
-```
-docker build -t ap-southeast-3.myhuaweicloud.com/test-fq/likecard-jenkins:latest .
-
-jenkins/agent:latest-alpine3.19-jdk21
-```
+## Email Notification configuration
+Ref: https://www.youtube.com/watch?v=pAOJ9k2o67Q

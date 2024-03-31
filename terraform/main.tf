@@ -27,16 +27,34 @@ provider "huaweicloud" {
 
 resource "huaweicloud_compute_instance" "likecard-ecs" {
   name = "likecard-ecs"
+  image_name = "Huawei Cloud EulerOS 2.0 Standard 64 bit"
   flavor_id = "s3.xlarge.2"
   admin_pass = var.password
   system_disk_type = "SAS"
   system_disk_size = 40
   network {
-    uuid = "55534eaa-533a-419d-9b40-ec427ea7195a"
+    uuid = huaweicloud_vpc_subnet.jenkins-subnet.id
   }
 }
 
+resource "huaweicloud_vpc" "likecard-vpc" {
+  name                  = "likecard-vpc"
+  cidr                  = "192.168.0.0/16"
+  enterprise_project_id = var.project_ID
+}
+
+resource "huaweicloud_vpc_subnet" "jenkins-subnet" {
+  name       = "jenkins-subnet"
+  cidr       = "192.168.0.0/16"
+  gateway_ip = "192.168.0.1"
+
+  primary_dns   = "100.125.1.250"
+  secondary_dns = "100.125.21.250"
+  vpc_id        = huaweicloud_vpc.likecard-vpc.id
+}
+
 resource "huaweicloud_vpc_eip" "likecard-eip" {
+  name = "likecard-eip"
   publicip {
     type = "5_bgp"
   }
@@ -48,7 +66,11 @@ resource "huaweicloud_vpc_eip" "likecard-eip" {
   }
 }
 
-resource "huaweicloud_compute_eip_associate" "associated" {
+resource "huaweicloud_compute_eip_associate" "likecard-associated" {
   public_ip   = huaweicloud_vpc_eip.likecard-eip.address
   instance_id = huaweicloud_compute_instance.likecard-ecs.id
+}
+
+output "likecard-IP" {
+  value = huaweicloud_vpc_eip.likecard-eip.publicip
 }
