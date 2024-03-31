@@ -53,7 +53,7 @@ pipeline {
                     emailext(
                         subject: "Approval Needed for Deployment",
                         body: messageBody,
-                        to: 'user@example.com',
+                        to: 'chan1992241@gmail.com',
                         mimeType: 'text/html'
                     )
                     // Set the chosen environment type as a global environment variable
