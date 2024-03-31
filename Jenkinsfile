@@ -51,18 +51,11 @@ pipeline {
                     // mail to: 'chan1992241@gmail.com',
                     //     subject: "Approval Needed for Deployment",
                     //     body: messageBody
-                    def userInput = input {
-                        message "Should we continue?"
-                        ok 'Submit'
-                        id 'envId'
-                        submitter "Chan Jin Yee"
-                        submitterParameter 'approverId'
-                        parameters {
-                            choice(choices: ['Prod', 'Pre-Prod'], name: 'envType', description: 'Deployment Environment')
-                        }
-                    }           
+                    env.envType = input message: 'Confirm deployment environment:', 
+                                submitter: 'Chan Jin Yee',
+                                submitterParameter: 'approverId',
+                                parameters: [choice(name: 'envType', choices: ['Pre-Prod', 'Prod'], description: 'Deployment Environment')]         
                     // env.envType = userInput.envType
-                    echo "${userInput}" 
                     echo "Deployment approved to ${env.envType} by ${approverId}."
                 }
             }
