@@ -41,21 +41,27 @@ pipeline {
             }
         }
         stage('Approval')  {
+            // input {
+            //     message "Should we continue?"
+            //     ok 'Submit'
+            //     id 'envId'
+            //     submitter "Chan Jin Yee"
+            //     submitterParameter 'approverId'
+            //     parameters {
+            //         choice(choices: ['Pre-Prod', 'Prod'], name: 'envType', description: 'Deployment Environment')
+            //     }
+            // }
             steps {
-                script {    
-                    // def messageBody = "Hi,\n\n" +
-                    //           "Deployment approval is required.\n" +
-                    //           "Please visit the Jenkins job to approve: ${env.BUILD_URL}\n"
-
-                    // // Trigger email for approval with job URL using simple mail step
-                    // mail to: 'chan1992241@gmail.com',
-                    //     subject: "Approval Needed for Deployment",
-                    //     body: messageBody
-                    env.envType = input message: 'Confirm deployment environment:', 
-                                submitter: 'Chan Jin Yee',
-                                submitterParameter: 'approverId',
-                                parameters: [choice(name: 'envType', choices: ['Pre-Prod', 'Prod'], description: 'Deployment Environment')]         
-                    // env.envType = userInput.envType
+                script {
+                    // Set the chosen environment type as a global environment variable
+                    env.envType = input {
+                        message: 'Confirm deployment environment:', 
+                        ok 'Submit',
+                        id 'envId',
+                        submitter "Chan Jin Yee",
+                        submitterParameter 'approverId',
+                        parameters: [choice(name: 'envType', choices: ['Pre-Prod', 'Prod'], description: 'Deployment Environment')]
+                    }
                     echo "Deployment approved to ${env.envType} by ${approverId}."
                 }
             }
