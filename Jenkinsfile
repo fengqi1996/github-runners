@@ -43,6 +43,14 @@ pipeline {
         stage('Approval')  {
             steps {
                 script {    
+                    // def messageBody = "Hi,\n\n" +
+                    //           "Deployment approval is required.\n" +
+                    //           "Please visit the Jenkins job to approve: ${env.BUILD_URL}\n"
+
+                    // // Trigger email for approval with job URL using simple mail step
+                    // mail to: 'chan1992241@gmail.com',
+                    //     subject: "Approval Needed for Deployment",
+                    //     body: messageBody
                     def userInput = input {
                         message "Should we continue?"
                         ok 'Submit'
@@ -53,7 +61,8 @@ pipeline {
                             choice(choices: ['Prod', 'Pre-Prod'], name: 'envType', description: 'Deployment Environment')
                         }
                     }           
-                    env.envType = userInput.envType     
+                    // env.envType = userInput.envType
+                    echo "${userInput}" 
                     echo "Deployment approved to ${env.envType} by ${approverId}."
                 }
             }
