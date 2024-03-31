@@ -55,6 +55,7 @@ pipeline {
                         body: messageBody,
                         from: 'chan1992241@gmail.com',
                         to: 'chan1992241@gmail.com',
+                        replyTo: 'chan1992241@gmail.com',
                         mimeType: 'text/html'
                     )
                     // Set the chosen environment type as a global environment variable
