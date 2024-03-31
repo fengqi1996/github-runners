@@ -43,21 +43,6 @@ pipeline {
         stage('Approval')  {
             steps {
                 script {
-                    def messageBody = """
-                    <p>Hi,</p>
-                    <p>Deployment approval is required.</p>
-                    <p>Please visit the <a href="${env.BUILD_URL}">Jenkins job</a> to approve.</p>
-                    """
-                    
-                    // Trigger email for approval with job URL
-                    emailext(
-                        subject: "Approval Needed for Deployment",
-                        body: messageBody,
-                        from: 'chan1992241@gmail.com',
-                        to: 'chan1992241@gmail.com',
-                        replyTo: 'chan1992241@gmail.com',
-                        mimeType: 'text/html'
-                    )
                     // Set the chosen environment type as a global environment variable
                     env.envType = input message: 'Confirm deployment environment:', 
                                         submitter: 'Chan Jin Yee',
@@ -100,6 +85,21 @@ pipeline {
             sh 'docker image prune -f'
             echo "${WORKSPACE}"
             archiveArtifacts artifacts: 'Demo.CICD/dist/**', allowEmptyArchive: 'true'
+            def messageBody = """
+                <p>Hi,</p>
+                <p>Deployment approval is required.</p>
+                <p>Please visit the <a href="${BUILD_URL}">Jenkins job</a> to approve.</p>
+                """
+            
+            // Trigger email for approval with job URL
+            emailext(
+                subject: "Approval Needed for Deployment",
+                body: messageBody,
+                from: 'chan1992241@gmail.com',
+                to: 'chan1992241@gmail.com',
+                replyTo: 'chan1992241@gmail.com',
+                mimeType: 'text/html'
+            )
         }
     }
 }
