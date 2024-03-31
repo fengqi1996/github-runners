@@ -41,21 +41,26 @@ pipeline {
             }
         }
         stage('Approval')  {
-            input {
-                message "Should we continue?"
-                ok 'Submit'
-                id 'envId'
-                submitter "Chan Jin Yee"
-                submitterParameter 'approverId'
-                parameters {
-                    choice(choices: ['Prod', 'Pre-Prod'], name: 'envType', description: 'Deployment Environment')
-                }
-            }
             steps {
                 script {
+                    def messageBody = """
+                    <p>Hi,</p>
+                    <p>Deployment approval is required.</p>
+                    <p>Please visit the <a href="${env.BUILD_URL}">Jenkins job</a> to approve.</p>
+                    """
+                    
+                    // Trigger email for approval with job URL
+                    emailext(
+                        subject: "Approval Needed for Deployment",
+                        body: messageBody,
+                        to: 'user@example.com',
+                        mimeType: 'text/html'
+                    )
                     // Set the chosen environment type as a global environment variable
                     env.envType = input message: 'Confirm deployment environment:', 
-                                        parameters: [choice(name: 'envType', choices: ['Prod', 'Pre-Prod'], description: 'Deployment Environment')]
+                                        submitter: 'Chan Jin Yee',
+                                        submitterParameter: 'approverId',
+                                        parameters: [choice(name: 'envType', choices: ['Pre-Prod', 'Prod'], description: 'Deployment Environment')]
                     
                     echo "Deployment approved to ${env.envType} by ${approverId}."
                 }
