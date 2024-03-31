@@ -45,8 +45,6 @@ pipeline {
                 script {
                     // Set the chosen environment type as a global environment variable
                     env.envType = input message: 'Confirm deployment environment:', 
-                                        submitter: 'Chan Jin Yee',
-                                        submitterParameter: 'approverId',
                                         parameters: [choice(name: 'envType', choices: ['Pre-Prod', 'Prod'], description: 'Deployment Environment')]
                     
                     echo "Deployment approved to ${env.envType} by ${approverId}."
