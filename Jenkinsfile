@@ -53,7 +53,7 @@ pipeline {
                     emailext(
                         subject: "Approval Needed for Deployment",
                         body: messageBody,
-                        from: 'chan1992241@gmail.com'
+                        from: 'chan1992241@gmail.com',
                         to: 'chan1992241@gmail.com',
                         mimeType: 'text/html'
                     )
