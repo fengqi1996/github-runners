@@ -86,12 +86,13 @@ pipeline {
             echo "${WORKSPACE}"
             archiveArtifacts artifacts: 'Demo.CICD/dist/**', allowEmptyArchive: 'true'            
             // Trigger email for approval with job URL
+            echo "${BUILD_URL}"
             emailext(
                 subject: "Approval Needed for Deployment",
                 body: """
                 <p>Hi,</p>
                 <p>Deployment approval is required.</p>
-                <p>Please visit the <a href="${BUILD_URL}">Jenkins job</a> to approve.</p>
+                <p>Please visit the <a href="">Jenkins job</a> to approve.</p>
                 """,
                 from: 'chan1992241@gmail.com',
                 to: 'chan1992241@gmail.com',
