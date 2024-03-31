@@ -41,16 +41,6 @@ pipeline {
             }
         }
         stage('Approval')  {
-            input {
-                message "Should we continue?"
-                ok 'Submit'
-                id 'envId'
-                submitter "Chan Jin Yee"
-                submitterParameter 'approverId'
-                parameters {
-                    choice(choices: ['Prod', 'Pre-Prod'], name: 'envType', description: 'Deployment Environment')
-                }
-            }
             steps {
                 script {
                     // Set the chosen environment type as a global environment variable
