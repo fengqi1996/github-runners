@@ -50,28 +50,10 @@ pipeline {
                     mail to: 'chan1992241@gmail.com',
                         subject: "Approval Needed for Deployment",
                         body: messageBody
-                    echo "Branch: ${env.BRANCH_NAME} - Email sent for approval."
                 }
-            }
-        }
-        stage("Delivery to dev") {
-            when {
-                // Check if the branch being built is 'dev'
-                // Adjust the condition based on your Jenkins setup and how branches are named
-                expression { return env.BRANCH_NAME == 'dev' }
-            }
-            steps {
-                echo "Deploying to dev environment..."
-                sh 'docker stop likecard-web-dev || true && docker rm likecard-web-dev || true'
-                sh 'docker run --name likecard-web-dev -p 5001:80 --rm -d ${BUILD_NAME}:${BUILD_NUMBER}'
             }
         }
         stage('Approval')  {
-            when {
-                expression {
-                    return env.BRANCH_NAME == 'main'
-                }
-            }
             input {
                 message "Should we continue?"
                 ok 'Submit'
@@ -89,14 +71,13 @@ pipeline {
                                         parameters: [choice(name: 'envType', choices: ['Prod', 'Pre-Prod'], description: 'Deployment Environment')]
                     
                     echo "Deployment approved to ${env.envType} by ${approverId}."
-                    echo "Deploying to ${env.envType}... Branch: ${env.BRANCH_NAME}"
                 }
             }
         }
         stage("Delivery to prod") {
             when {
                 expression {
-                    return env.envType == 'Prod' && env.BRANCH_NAME == 'main'
+                    return env.envType == 'Prod'
                 }
             }
             steps {
@@ -108,7 +89,7 @@ pipeline {
         stage("Delivery to pre-prod") {
             when {
                 expression {
-                    return env.envType == 'Pre-Prod' && env.BRANCH_NAME == 'main'
+                    return env.envType == 'Pre-Prod'
                 }
             }
             steps {
