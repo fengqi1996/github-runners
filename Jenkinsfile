@@ -50,6 +50,7 @@ pipeline {
                     mail to: 'chan1992241@gmail.com',
                         subject: "Approval Needed for Deployment",
                         body: messageBody
+                    echo "Branch: ${env.BRANCH_NAME} - Email sent for approval."
                 }
             }
         }
@@ -88,6 +89,7 @@ pipeline {
                                         parameters: [choice(name: 'envType', choices: ['Prod', 'Pre-Prod'], description: 'Deployment Environment')]
                     
                     echo "Deployment approved to ${env.envType} by ${approverId}."
+                    echo "Deploying to ${env.envType}... Branch: ${env.BRANCH_NAME}"
                 }
             }
         }
