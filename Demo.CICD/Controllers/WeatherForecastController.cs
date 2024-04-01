@@ -33,7 +33,7 @@ namespace Demo.CICD.Controllers
         [HttpGet("/", Name = "GetRoot")]
         public IActionResult GetRoot()
         {
-            var response = new { Message = "Welcome to the Weather Forecast API! Dev environment" };
+            var response = new { Message = "Welcome to the Weather Forecast API! Dev environment, Pre-Production" };
             return Ok(response);
         }
     }
