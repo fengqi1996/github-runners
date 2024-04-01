@@ -6,6 +6,7 @@ pipeline {
         BUILD_NAME = credentials('Demo.CICD-Build-Name')
         SWR_AK = credentials('Demo.CICD-SWR-AK')
         SWR_SK = credentials('Demo.CICD-SWR-SK')
+        APPROVER_ID = ''
     }
     parameters {
         choice choices: ['Prod', 'Pre-Prod'], name: 'envType'
@@ -69,7 +70,7 @@ pipeline {
                     // Set the chosen environment type as a global environment variable
                     env.envType = input message: 'Confirm deployment environment:', 
                                         parameters: [choice(name: 'envType', choices: ['Prod', 'Pre-Prod'], description: 'Deployment Environment')]
-                    
+                    APPROVER_ID = env.approverId
                     echo "Deployment approved to ${env.envType} by ${env.approverId}."
                 }
             }
@@ -81,7 +82,7 @@ pipeline {
                 }
             }
             steps {
-                echo "Approver: ${env.approverId}"
+                echo "Approver: ${APPROVER_ID}"
                 echo "Deploying to ${env.envType}..."
                 sh 'docker stop likecard-web-prod || true && docker rm likecard-web-prod || true'
                 sh 'docker run --name likecard-web-prod -p 5000:80 --rm -d ${BUILD_NAME}:${BUILD_NUMBER}'
@@ -94,7 +95,7 @@ pipeline {
                 }
             }
             steps {
-                echo "Approver: ${env.approverId}"
+                echo "Approver: ${APPROVER_ID}"
                 echo "Deploying to ${env.envType}..."
                 sh 'docker stop likecard-web-pre-prod || true && docker rm likecard-web-pre-prod || true'
                 sh 'docker run --name likecard-web-pre-prod -p 8000:80 --rm -d ${BUILD_NAME}:${BUILD_NUMBER}'
