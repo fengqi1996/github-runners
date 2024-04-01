@@ -40,19 +40,19 @@ pipeline {
                 sh 'docker push ${BUILD_NAME}:${BUILD_NUMBER}'
             }
         }
-        stage('Email Approval') {
-            steps {
-                script{
-                    def messageBody = "Hi,\n\n" +
-                        "Deployment approval is required.\n" +
-                        "Please visit the Jenkins job to approve: ${env.BUILD_URL}\n"
-                    // Trigger email for approval with job URL using simple mail step
-                    mail to: 'chan1992241@gmail.com',
-                        subject: "Approval Needed for Deployment",
-                        body: messageBody
-                }
-            }
-        }
+        // stage('Email Approval') {
+        //     steps {
+        //         script{
+        //             def messageBody = "Hi,\n\n" +
+        //                 "Deployment approval is required.\n" +
+        //                 "Please visit the Jenkins job to approve: ${env.BUILD_URL}\n"
+        //             // Trigger email for approval with job URL using simple mail step
+        //             mail to: 'chan1992241@gmail.com',
+        //                 subject: "Approval Needed for Deployment",
+        //                 body: messageBody
+        //         }
+        //     }
+        // }
         stage('Approval')  {
             input {
                 message "Should we continue?"
