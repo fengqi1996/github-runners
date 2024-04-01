@@ -78,7 +78,7 @@ pipeline {
         stage("Delivery to prod") {
             when {
                 expression {
-                    return env.envType == 'Prod' && APPROVER_ID == 'Chan Jin Yee'
+                    return env.envType == 'Prod' && APPROVER_ID == 'jinyee'
                 }
             }
             steps {
