@@ -81,6 +81,7 @@ pipeline {
                 }
             }
             steps {
+                echo "Approver: ${approverId}"
                 echo "Deploying to ${env.envType}..."
                 sh 'docker stop likecard-web-prod || true && docker rm likecard-web-prod || true'
                 sh 'docker run --name likecard-web-prod -p 5000:80 --rm -d ${BUILD_NAME}:${BUILD_NUMBER}'
@@ -93,6 +94,7 @@ pipeline {
                 }
             }
             steps {
+                echo "Approver: ${approverId}"
                 echo "Deploying to ${env.envType}..."
                 sh 'docker stop likecard-web-pre-prod || true && docker rm likecard-web-pre-prod || true'
                 sh 'docker run --name likecard-web-pre-prod -p 8000:80 --rm -d ${BUILD_NAME}:${BUILD_NUMBER}'
