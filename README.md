@@ -11,9 +11,9 @@
 ## 1. Infrastucture
 Prepare related infrastucture using terraform
 ```bash
-export HW_ACCESS_KEY="<- Your Huawei Access Key ->"
+export HW_ACCESS_KEY="2EHGMJTTJBTWTK1JIZKA"
 export HW_SECRET_KEY="<- Your Huawei Secret Key ->"
-export PROJECT_ID="<- Your Project ID ->"
+export PROJECT_ID="0"
 export PASSWORD="<- Your ECS password, will used for SSH ->"
 
 terraform init
@@ -28,11 +28,10 @@ systemctl start docker
 
 #2. Deploy Jenkins To Docker
 docker run --name jenkins-blueocean --restart=on-failure --detach \
-  --network jenkins \
   --volume jenkins-data:/var/jenkins_home \
   --volume /var/run/docker.sock:/var/run/docker.sock \
   --privileged \
-  --user=root --publish 8080:8080 --publish 50000:50000 swr.ap-southeast-3.myhuaweicloud.com/test-fq/likecard-jenkins:latest
+  --user=root --publish 8080:8080 --publish 50000:50000 jenkins/jenkins:lts-jdk17
 
 # 3. Get "first time login" password
 docker exec jenkins-blueocean cat /var/jenkins_home/secrets/initialAdminPassword
@@ -56,10 +55,13 @@ To turn off node executor follow below figure.
 Then we need to create agent to run pipeline. First, we need to install relative Jenkins plugin.Follow step from below figure.
 ![alt text](./assets/image-3.png)
 
-Then, we need to configure our agent. 
+Then, we need to configure our agent. There are some important note before you follow below guide, the official image used as agent may have problem. You need to create your own image. Follow the below guide before going to the figure.
+```
+cd jenkins-agent
+docker build -t swr.ap-southeast-3.myhuaweicloud.com/test-fq/jenkins-agent:latest .
+docker push swr.ap-southeast-3.myhuaweicloud.com/test-fq/jenkins-agent:latest
+```
 ![alt text](./assets/image-8.png)
-
-![alt text](./assets/image-5.png)
 
 ```bash
 # Agent Mounts
@@ -88,7 +90,16 @@ Then we need to configure the credentials used in Jenkinsfile include docker reg
 
 ![alt text](./assets/image-9.png)
 
+Demo.CICD-Build-Name: swr.ap-southeast-3.myhuaweicloud.com/test-fq/likecard-demo
+Demo.CICD-SWR-AK: <- Your HW access key get from HW cloud console ->
+Demo.CICD-SWR-SK: <- Follow below instruction ->
+```bash
+printf "Huawei Access Key Here (Get From Console)" | openssl dgst -binary -sha256 -hmac "Huawei Secret Key Here (Get From Console)" | od -An -vtx1 | sed 's/[ \n]//g' | sed 'N;s/\n//'
+```
+
 Then you can make a commit in your gitlab to check your pipeline execution. That all for this, thank you.
 
 ## Email Notification configuration
 Ref: https://www.youtube.com/watch?v=pAOJ9k2o67Q
+
+![alt text](./assets/image-12.png)
