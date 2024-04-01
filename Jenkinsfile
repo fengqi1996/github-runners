@@ -53,7 +53,24 @@ pipeline {
                 }
             }
         }
+        stage("Delivery to dev") {
+            when {
+                // Check if the branch being built is 'dev'
+                // Adjust the condition based on your Jenkins setup and how branches are named
+                expression { return env.BRANCH_NAME == 'dev' }
+            }
+            steps {
+                echo "Deploying to dev environment..."
+                sh 'docker stop likecard-web-dev || true && docker rm likecard-web-dev || true'
+                sh 'docker run --name likecard-web-dev -p 5001:80 --rm -d ${BUILD_NAME}:${BUILD_NUMBER}'
+            }
+        }
         stage('Approval')  {
+            when {
+                expression {
+                    return env.BRANCH_NAME == 'main'
+                }
+            }
             input {
                 message "Should we continue?"
                 ok 'Submit'
@@ -77,7 +94,7 @@ pipeline {
         stage("Delivery to prod") {
             when {
                 expression {
-                    return env.envType == 'Prod'
+                    return env.envType == 'Prod' && env.BRANCH_NAME == 'main'
                 }
             }
             steps {
@@ -89,7 +106,7 @@ pipeline {
         stage("Delivery to pre-prod") {
             when {
                 expression {
-                    return env.envType == 'Pre-Prod'
+                    return env.envType == 'Pre-Prod' && env.BRANCH_NAME == 'main'
                 }
             }
             steps {
