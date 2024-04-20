@@ -1,0 +1,14 @@
+bin/
+obj/
+out/
+TestResults/
+**/bin/
+**/obj/
+assets
+app
+terraform
+jenkins
+jenkins-agent
+readme.md
+Dockerfile
+./Demo.CICD/Dockerfile
