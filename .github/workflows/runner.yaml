@@ -61,6 +61,7 @@ jobs:
           mkdir -p $HOME/.kube
           export KUBECONFIG=$HOME/.kube/config
           echo ${{ secrets.KUBE_CONFIG }} | base64 -d > $KUBECONFIG
+          kubectl config use-context internal
           sed -i "s/gra-demo-image/swr.${{ secrets.PROJECT }}.myhuaweicloud.com\/${{ secrets.ORGANIZATION }}\/gra-jy:${{ github.run_id }}/g" k8s.yaml
           kubectl version
           kubectl apply -f k8s.yaml
