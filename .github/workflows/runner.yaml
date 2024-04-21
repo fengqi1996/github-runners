@@ -46,7 +46,7 @@ jobs:
     - name: Push
       run: "docker push swr.${{ secrets.PROJECT }}.myhuaweicloud.com/${{ secrets.ORGANIZATION }}/gra-jy:${{ github.run_id }}"
   
-deploy:
+  deploy:
     needs: build
     runs-on: arc-runner-set
     steps:
