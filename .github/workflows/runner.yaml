@@ -63,6 +63,4 @@ jobs:
           echo ${{ secrets.KUBE_CONFIG }} | base64 -d > $KUBECONFIG
           sed -i "s/gra-demo-image/swr.${{ secrets.PROJECT }}.myhuaweicloud.com\/${{ secrets.ORGANIZATION }}\/gra-jy:${{ github.run_id }}/g" k8s.yaml
           kubectl version
-          sleep 60000
-          kubectl get pods
           kubectl apply -f k8s.yaml
