@@ -7,14 +7,14 @@ on:
     branches: [ "main" ]
 
 jobs:
-  # package:
-  #   runs-on: arc-runner-set
-  #   steps:
-  #   - uses: actions/checkout@v4
-  #   - name: Package step
-  #     run: |
-  #       echo "hello"
-  #       echo "package"
+  package:
+    runs-on: arc-runner-set
+    steps:
+    - uses: actions/checkout@v4
+    - name: Package step
+      run: |
+        echo "hello"
+        echo "package"
   # build:
   #   needs: package
   #   runs-on: arc-runner-set
