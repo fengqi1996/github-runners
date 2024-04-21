@@ -61,6 +61,6 @@ jobs:
           mkdir -p $HOME/.kube
           export KUBECONFIG=$HOME/.kube/config
           echo ${{ secrets.KUBE_CONFIG }} | base64 -d > $KUBECONFIG
-          sed -i "s/jenkins-demo-image/swr.${{ secrets.PROJECT }}.myhuaweicloud.com\/${{ secrets.ORGANIZATION }}\/gra-jy:${{ github.run_id }}/g" k8s.yaml
+          sed -i "s/gra-demo-image/swr.${{ secrets.PROJECT }}.myhuaweicloud.com\/${{ secrets.ORGANIZATION }}\/gra-jy:${{ github.run_id }}/g" k8s.yaml
           kubectl cluster-info
           kubectl apply -f k8s.yaml

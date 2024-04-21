@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gra-demo
+spec:
+  selector:
+    matchLabels:
+      app: gra-demo
+  template:
+    metadata:
+      labels:
+        app: gra-demo
+    spec:
+      containers:
+      - image: gra-demo-image
+        imagePullPolicy: IfNotPresent
+        name: gra-demo
+        env:
+        - name: branch
+      imagePullSecrets:
+        - name: default-secret
