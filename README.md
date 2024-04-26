@@ -1,4 +1,4 @@
-# Step By Step Jenkins CI/CD Guide with Huawei Cloud ECS. (TLDR)
+# Step By Step Jenkins CI/CD Guide with Huawei Cloud ECS. (TLDR...)
 1.	Programming language or framework to used is (.Net)
 2.	CI/CD tool will be used (Jenkins)
 3.	Source control management tool (GitLab)
