@@ -8,7 +8,7 @@ on:
 
 jobs:
   package:
-    runs-on: arc-runner-set
+    runs-on: arc-runner-set-2
     steps:
     - uses: actions/checkout@v4
     - name: Package step
