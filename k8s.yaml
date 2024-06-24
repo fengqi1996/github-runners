@@ -24,18 +24,18 @@ apiVersion: v1
 kind: Service
 metadata:
   name: gra-demo
-annotations:
-  kubernetes.io/elb.class: union
-  kubernetes.io/elb.autocreate: '{
-      "type": "public",
-      "bandwidth_name": "gra-demo",
-      "bandwidth_chargemode": "bandwidth",
-      "bandwidth_size": 5,
-      "bandwidth_sharetype": "PER",
-      "eip_type": "5_bgp",
-      "name": "test-jy-gra-demo"
-    }'
-  kubernetes.io/elb.enterpriseID: '7fc0dcb6-d6bc-4b9a-af64-061c3793b013'
+  annotations:
+    kubernetes.io/elb.class: union
+    kubernetes.io/elb.autocreate: '{
+        "type": "public",
+        "bandwidth_name": "gra-demo",
+        "bandwidth_chargemode": "bandwidth",
+        "bandwidth_size": 5,
+        "bandwidth_sharetype": "PER",
+        "eip_type": "5_bgp",
+        "name": "test-jy-gra-demo"
+      }'
+    kubernetes.io/elb.enterpriseID: '7fc0dcb6-d6bc-4b9a-af64-061c3793b013'
 spec:
   selector:
     app: gra-demo
