@@ -40,6 +40,6 @@ spec:
   selector:
     app: gra-demo
   ports:
-  - port: 8085
+  - port: 8086
     targetPort: 80
   type: LoadBalancer
