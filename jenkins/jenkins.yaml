@@ -69,8 +69,8 @@ spec:
     - id: jenkins-operator
       credentialType: usernamePassword
       credentialID: github-username-password
-      targets: "jenkins/cicd/*.groovy"
+      targets: "jenkins/cicd/jobs/*.groovy"
       description: "Jenkins Operator repository"
-      repositoryBranch: master
-      repositoryUrl: https://github.com/oversampling/Algorint.git
+      repositoryBranch: main
+      repositoryUrl: https://github.com/oversampling/github-runners.git
   seedJobAgentImage: "jenkins/inbound-agent:latest"    

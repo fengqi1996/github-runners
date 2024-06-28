@@ -7,13 +7,17 @@ def workdir = "${workspace}/src/github.com/jenkinsci/kubernetes-operator/"
  
 podTemplate(label: label,
         containers: [
-                containerTemplate(name: 'alpine', image: 'alpine:3.11', ttyEnabled: true, command: 'cat'),
+                containerTemplate(name: 'alpine', image: 'alpine:3.11', ttyEnabled: true, command: 'cat',
+                    envVars: [
+                        envVar(key: 'USERNAME', valueFrom: secretKeyRef(key: 'username', name: 'my-secret')),
+                    ]
+                ),
         ],
         ) {
     node(label) {
         stage('Run shell') {
             container('alpine') {
-                sh 'echo "hello world"'
+                sh 'echo "$USERNAME"'
             }
         }
     }

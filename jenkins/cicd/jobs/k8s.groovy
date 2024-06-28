@@ -22,10 +22,10 @@ pipelineJob('k8s-e2e') {
                         url('https://github.com/oversampling/github-runners.git')
                         credentials('github-username-password')
                     }
-                    branches('*/master')
+                    branches('*/main')
                 }
             }
-            scriptPath('cicd/pipelines/k8s.jenkins')
+            scriptPath('jenkins/cicd/pipelines/k8s.groovy')
         }
     }
 }
