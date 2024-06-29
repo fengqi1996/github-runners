@@ -11,13 +11,22 @@ podTemplate(label: label,
     ],
     containers: [
         containerTemplate(name: 'alpine', image: 'alpine:3.11', ttyEnabled: true, command: 'cat'),
+        containerTemplate(name: 'docker', image: 'docker:dind', ttyEnabled: true, command: 'cat'),
     ],
     ) {
     node(label) {
         stage('Run shell') {
             container('alpine') {
                 sh 'echo "$USERNAME"'
+                sh 'ls -la'
             }
+        }
+        stage('Docker') {
+            container('docker') [
+                sh 'docker version'
+                sh 'ls -la'
+                sh 'docker build -t test .'
+            ]
         }
     }
 }
