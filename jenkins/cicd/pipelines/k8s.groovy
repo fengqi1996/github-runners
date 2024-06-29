@@ -11,7 +11,7 @@ podTemplate(label: label,
     ],
     containers: [
         containerTemplate(name: 'alpine', image: 'alpine:3.11', ttyEnabled: true, command: 'cat'),
-        containerTemplate(name: 'docker', image: 'docker:dind', ttyEnabled: true, command: 'cat'),
+        containerTemplate(name: 'docker', image: 'docker:dind', ttyEnabled: true, command: 'cat', privileged: true),
     ],
     ) {
     node(label) {
@@ -22,11 +22,11 @@ podTemplate(label: label,
             }
         }
         stage('Docker') {
-            container('docker') [
+            container('docker') {
                 sh 'docker version'
                 sh 'ls -la'
                 sh 'docker build -t test .'
-            ]
+            }
         }
     }
 }
