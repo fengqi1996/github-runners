@@ -11,7 +11,7 @@ podTemplate(label: label,
     ],
     containers: [
         containerTemplate(name: 'alpine', image: 'alpine:3.11', ttyEnabled: true, command: 'cat'),
-        containerTemplate(name: 'docker', image: 'docker:dind', ttyEnabled: true, privileged: true, command: 'dockerd-entrypoint.sh --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock',),
+        containerTemplate(name: 'docker', image: 'docker:dind', ttyEnabled: true, privileged: true),
     ],
     ) {
     node(label) {
