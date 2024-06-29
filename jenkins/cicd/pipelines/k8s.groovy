@@ -15,6 +15,9 @@ podTemplate(label: label,
     ],
     ) {
     node(label) {
+        stage('Checkout') {
+            checkout([$class: 'GitSCM', branches: [[name: '*/main']], userRemoteConfigs: [[url: 'https://github.com/oversampling/github-runners.git', credentialsId: 'github-username-password']]])
+        }
         stage('Run shell') {
             container('alpine') {
                 sh 'echo "$USERNAME"'
