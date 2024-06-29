@@ -7,7 +7,7 @@ def workdir = "${workspace}/src/github.com/jenkinsci/kubernetes-operator/"
  
 podTemplate(label: label,
     envVars: [
-        secretEnvVar(key: 'USERNAME', secretName: '', secretKey: 'password')
+        secretEnvVar(key: 'USERNAME', secretName: 'github-username-password', secretKey: 'password')
     ],
     containers: [
         containerTemplate(name: 'alpine', image: 'alpine:3.11', ttyEnabled: true, command: 'cat'),
