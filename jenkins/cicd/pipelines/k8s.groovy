@@ -10,7 +10,7 @@ podTemplate(label: label,
         secretEnvVar(key: 'USERNAME', secretName: '', secretKey: 'password')
     ],
     containers: [
-            containerTemplate(name: 'alpine', image: 'alpine:3.11', secretEnvVar:  ,ttyEnabled: true, command: 'cat'),
+        containerTemplate(name: 'alpine', image: 'alpine:3.11', ttyEnabled: true, command: 'cat'),
     ],
     ) {
     node(label) {
