@@ -36,7 +36,7 @@ podTemplate(label: label,
                 sh 'ls -la'
                 sh 'docker login -u ap-southeast-3@${SWR_AK} -p $SWR_SK swr.ap-southeast-3.myhuaweicloud.com'
                 sh 'docker build -t $BUILD_IMG:$BUILD_NUMBER .'
-                sh 'docker push ${BUILD_IMG}:${BUID_NUMBER}'
+                sh 'docker push ${BUILD_IMG}:${BUILD_NUMBER}'
             }
         }
         stage('Deploy') {
@@ -44,7 +44,7 @@ podTemplate(label: label,
                 sh 'kubectl version'
                 sh 'export KUBECONFIG=$HOME/.kube/config'
                 sh 'echo ${ KUBECONFIG } | base64 -d > $KUBECONFIG'
-                sh 'sed -i "s/gra-demo-image/${BUILD_IMG}:${BUILD_IMG}/g" k8s.yaml'
+                sh 'sed -i "s/gra-demo-image/${BUILD_IMG}:${BUILD_NUMBER}/g" k8s.yaml'
                 //   kubectl version
                 sh 'kubectl apply -f k8s.yaml'
             }
