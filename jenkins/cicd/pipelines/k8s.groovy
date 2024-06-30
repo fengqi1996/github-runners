@@ -21,24 +21,24 @@ podTemplate(label: label,
     ],
     ) {
     node(label) {
-        stage('Checkout') {
-            checkout([$class: 'GitSCM', branches: [[name: '*/main']], userRemoteConfigs: [[url: 'https://github.com/oversampling/github-runners.git', credentialsId: 'github-username-password']]])
-        }
-        stage('Run shell') {
-            container('alpine') {
-                sh 'echo "$USERNAME"'
-                sh 'ls -la'
-            }
-        }
-        stage('Build Push') {
-            container('docker') {
-                sh 'docker version'
-                sh 'ls -la'
-                sh 'docker login -u ap-southeast-3@${SWR_AK} -p $SWR_SK swr.ap-southeast-3.myhuaweicloud.com'
-                sh 'docker build -t $BUILD_IMG:$BUILD_NUMBER .'
-                sh 'docker push ${BUILD_IMG}:${BUILD_NUMBER}'
-            }
-        }
+        // stage('Checkout') {
+        //     checkout([$class: 'GitSCM', branches: [[name: '*/main']], userRemoteConfigs: [[url: 'https://github.com/oversampling/github-runners.git', credentialsId: 'github-username-password']]])
+        // }
+        // stage('Run shell') {
+        //     container('alpine') {
+        //         sh 'echo "$USERNAME"'
+        //         sh 'ls -la'
+        //     }
+        // }
+        // stage('Build Push') {
+        //     container('docker') {
+        //         sh 'docker version'
+        //         sh 'ls -la'
+        //         sh 'docker login -u ap-southeast-3@${SWR_AK} -p $SWR_SK swr.ap-southeast-3.myhuaweicloud.com'
+        //         sh 'docker build -t $BUILD_IMG:$BUILD_NUMBER .'
+        //         sh 'docker push ${BUILD_IMG}:${BUILD_NUMBER}'
+        //     }
+        // }
         stage('Deploy') {
             container('alpine') {
                 sh 'apk add curl'
@@ -46,7 +46,7 @@ podTemplate(label: label,
                 sh 'chmod +x ./kubectl'
                 sh 'mv ./kubectl /usr/local/bin'
                 sh 'mkdir -p $HOME/.kube'
-                sh 'echo ${KUBECONFIG} | base64 -d > $HOME/.kube/config'
+                sh 'echo "$KUBECONFIG" | base64 -d > ~/.kube/config'
                 sh 'kubectl version'
                 sh 'sed -i "s/gra-demo-image/${BUILD_IMG}:${BUILD_NUMBER}/g" k8s.yaml'
                 //   kubectl version
