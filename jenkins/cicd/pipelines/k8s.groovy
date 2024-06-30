@@ -47,6 +47,7 @@ podTemplate(label: label,
                 sh 'mv ./kubectl /usr/local/bin'
                 sh 'mkdir -p $HOME/.kube'
                 sh 'echo "$KUBECONFIG" | base64 -d > ~/.kube/config'
+                sh 'cat ~/.kube/config'
                 sh 'kubectl version'
                 sh 'sed -i "s/gra-demo-image/${BUILD_IMG}:${BUILD_NUMBER}/g" k8s.yaml'
                 //   kubectl version
