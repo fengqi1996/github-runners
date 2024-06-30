@@ -17,7 +17,7 @@ podTemplate(label: label,
     containers: [
         containerTemplate(name: 'alpine', image: 'alpine:3.11', ttyEnabled: true, command: 'cat'),
         containerTemplate(name: 'docker', image: 'docker:dind', ttyEnabled: true, privileged: true),
-        containerTemplate(name: 'kubectl', image: 'bitnami/kubectl:latest', ttyEnabled: true),
+        containerTemplate(name: 'kubectl', image: 'bitnami/kubectl:latest', ttyEnabled: true, command: 'cat'),
     ],
     ) {
     node(label) {
