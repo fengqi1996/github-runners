@@ -45,9 +45,10 @@ podTemplate(label: label,
                 sh 'curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl'
                 sh 'chmod +x ./kubectl'
                 sh 'mv ./kubectl /usr/local/bin'
-                sh 'mkdir -p $HOME/.kube'
+                sh 'mkdir -p ~/.kube'
                 sh 'echo "$KUBECONFIG" | base64 -d > ~/.kube/config'
                 sh 'cat ~/.kube/config'
+                sh 'export KUBECONFIG=~/.kube/config'
                 sh 'kubectl version'
                 sh 'sed -i "s/gra-demo-image/${BUILD_IMG}:${BUILD_NUMBER}/g" k8s.yaml'
                 //   kubectl version
