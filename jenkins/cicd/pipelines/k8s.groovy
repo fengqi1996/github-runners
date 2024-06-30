@@ -36,7 +36,7 @@ podTemplate(label: label,
                 sh 'ls -la'
                 sh 'docker login -u ap-southeast-3@${SWR_AK} -p $SWR_SK swr.ap-southeast-3.myhuaweicloud.com'
                 sh 'docker build -t $BUILD_IMG:$BUILD_NUMBER .'
-                sh 'docker push $BUILD_IMG:$BUID_NUMBER'
+                sh 'docker push ${BUILD_IMG}:${BUID_NUMBER}'
             }
         }
         stage('Deploy') {
