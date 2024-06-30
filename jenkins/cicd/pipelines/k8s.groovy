@@ -49,7 +49,7 @@ podTemplate(label: label,
                 sh 'echo "$KUBECONFIG" | base64 -d > ~/.kube/config'
                 sh 'cat ~/.kube/config'
                 sh 'export KUBECONFIG=~/.kube/config'
-                sh 'kubectl version'
+                // sh 'kubectl version'
                 sh 'sed -i "s/gra-demo-image/${BUILD_IMG}:${BUILD_NUMBER}/g" k8s.yaml'
                 //   kubectl version
                 sh 'kubectl apply -f k8s.yaml'
