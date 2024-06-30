@@ -17,7 +17,7 @@ podTemplate(label: label,
     containers: [
         containerTemplate(name: 'alpine', image: 'alpine:3.11', ttyEnabled: true, command: 'cat'),
         containerTemplate(name: 'docker', image: 'docker:dind', ttyEnabled: true, privileged: true),
-        containerTemplate(name: 'kubectl', image: 'bitnami/kubectl:latest', command: 'sleep infinity'),
+        // containerTemplate(name: 'kubectl', image: 'bitnami/kubectl:latest'),
     ],
     ) {
     node(label) {
@@ -28,6 +28,11 @@ podTemplate(label: label,
             container('alpine') {
                 sh 'echo "$USERNAME"'
                 sh 'ls -la'
+                sh 'apk add curl'
+                sh 'curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl'
+                sh 'chmod +x ./kubectl'
+                sh 'mv ./kubectl /usr/local/bin'
+                sh 'mkdir -p $HOME/.kube'
             }
         }
         stage('Build Push') {
@@ -40,7 +45,11 @@ podTemplate(label: label,
             }
         }
         stage('Deploy') {
-            container('kubectl') {
+            container('alpine') {
+                sh 'apk add curl'
+                sh 'curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl'
+                sh 'chmod +x ./kubectl'
+                sh 'mv ./kubectl /usr/local/bin'
                 sh 'mkdir -p $HOME/.kube'
                 sh 'kubectl version'
                 sh 'export KUBECONFIG=$HOME/.kube/config'
