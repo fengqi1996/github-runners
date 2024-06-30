@@ -7,11 +7,17 @@ def workdir = "${workspace}/src/github.com/jenkinsci/kubernetes-operator/"
  
 podTemplate(label: label,
     envVars: [
-        secretEnvVar(key: 'USERNAME', secretName: 'github-username-password', secretKey: 'password')
+        secretEnvVar(key: 'USERNAME', secretName: 'github-username-password', secretKey: 'password'),
+        secretEnvVar(key: 'SWR_AK', secretName: 'github-username-password', secretKey: 'SWR_AK'),
+        secretEnvVar(key: 'SWR_SK', secretName: 'github-username-password', secretKey: 'SWR_SK'),
+        secretEnvVar(key: 'BUILD_IMG', secretName: 'github-username-password', secretKey: 'BUILD_IMG'),
+        secretEnvVar(key: 'KUBECONFIG', secretName: 'github-username-password', secretKey: 'KUBECONFIG'),
+        
     ],
     containers: [
         containerTemplate(name: 'alpine', image: 'alpine:3.11', ttyEnabled: true, command: 'cat'),
         containerTemplate(name: 'docker', image: 'docker:dind', ttyEnabled: true, privileged: true),
+        containerTemplate(name: 'kubectl', image: 'bitnami/kubectl:latest', ttyEnabled: true),
     ],
     ) {
     node(label) {
@@ -24,11 +30,23 @@ podTemplate(label: label,
                 sh 'ls -la'
             }
         }
-        stage('Docker') {
+        stage('Build Push') {
             container('docker') {
                 sh 'docker version'
                 sh 'ls -la'
-                sh 'docker build -t test .'
+                sh 'docker login -u ap-southeast-3@${SWR_AK} -p $SWR_SK swr.ap-southeast-3.myhuaweicloud.com'
+                sh 'docker build -t $BUILD_IMG:$BUILD_NUMBER .'
+                sh 'docker push $BUILD_IMG:$BUID_NUMBER'
+            }
+        }
+        stage('Deploy') {
+            container('kubectl') {
+                sh 'kubectl version'
+                sh 'export KUBECONFIG=$HOME/.kube/config'
+                sh 'echo ${ KUBECONFIG } | base64 -d > $KUBECONFIG'
+                sh 'sed -i "s/gra-demo-image/${BUILD_IMG}:${BUILD_IMG}/g" k8s.yaml'
+                //   kubectl version
+                sh 'kubectl apply -f k8s.yaml'
             }
         }
     }
