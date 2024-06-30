@@ -17,7 +17,7 @@ podTemplate(label: label,
     containers: [
         containerTemplate(name: 'alpine', image: 'alpine:3.11', ttyEnabled: true, command: 'cat'),
         containerTemplate(name: 'docker', image: 'docker:dind', ttyEnabled: true, privileged: true),
-        containerTemplate(name: 'kubectl', image: 'bitnami/kubectl:latest', ttyEnabled: true, command: 'cat'),
+        containerTemplate(name: 'kubectl', image: 'bitnami/kubectl:latest', ttyEnabled: true, command: 'sleep infinity'),
     ],
     ) {
     node(label) {
@@ -41,6 +41,7 @@ podTemplate(label: label,
         }
         stage('Deploy') {
             container('kubectl') {
+                sh 'mkdir -p $HOME/.kube'
                 sh 'kubectl version'
                 sh 'export KUBECONFIG=$HOME/.kube/config'
                 sh 'echo ${ KUBECONFIG } | base64 -d > $KUBECONFIG'
