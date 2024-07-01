@@ -21,24 +21,24 @@ podTemplate(label: label,
     ],
     ) {
     node(label) {
-        // stage('Checkout') {
-        //     checkout([$class: 'GitSCM', branches: [[name: '*/main']], userRemoteConfigs: [[url: 'https://github.com/oversampling/github-runners.git', credentialsId: 'github-username-password']]])
-        // }
-        // stage('Run shell') {
-        //     container('alpine') {
-        //         sh 'echo "$USERNAME"'
-        //         sh 'ls -la'
-        //     }
-        // }
-        // stage('Build Push') {
-        //     container('docker') {
-        //         sh 'docker version'
-        //         sh 'ls -la'
-        //         sh 'docker login -u ap-southeast-3@${SWR_AK} -p $SWR_SK swr.ap-southeast-3.myhuaweicloud.com'
-        //         sh 'docker build -t $BUILD_IMG:$BUILD_NUMBER .'
-        //         sh 'docker push ${BUILD_IMG}:${BUILD_NUMBER}'
-        //     }
-        // }
+        stage('Checkout') {
+            checkout([$class: 'GitSCM', branches: [[name: '*/main']], userRemoteConfigs: [[url: 'https://github.com/oversampling/github-runners.git', credentialsId: 'github-username-password']]])
+        }
+        stage('Run shell') {
+            container('alpine') {
+                sh 'echo "$USERNAME"'
+                sh 'ls -la'
+            }
+        }
+        stage('Build Push') {
+            container('docker') {
+                sh 'docker version'
+                sh 'ls -la'
+                sh 'docker login -u ap-southeast-3@${SWR_AK} -p $SWR_SK swr.ap-southeast-3.myhuaweicloud.com'
+                sh 'docker build -t $BUILD_IMG:$BUILD_NUMBER .'
+                sh 'docker push ${BUILD_IMG}:${BUILD_NUMBER}'
+            }
+        }
         stage('Deploy') {
             container('alpine') {
                 sh 'apk add curl'
