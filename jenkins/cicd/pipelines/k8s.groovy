@@ -11,7 +11,7 @@ podTemplate(label: label,
         secretEnvVar(key: 'SWR_AK', secretName: 'github-username-password', secretKey: 'SWR_AK'),
         secretEnvVar(key: 'SWR_SK', secretName: 'github-username-password', secretKey: 'SWR_SK'),
         secretEnvVar(key: 'BUILD_IMG', secretName: 'github-username-password', secretKey: 'BUILD_IMG'),
-        secretEnvVar(key: 'KUBECONFIG', secretName: 'github-username-password', secretKey: 'KUBECONFIG'),
+        secretEnvVar(key: 'KUBE_CONFIG', secretName: 'github-username-password', secretKey: 'KUBECONFIG'),
         
     ],
     containers: [
@@ -46,12 +46,12 @@ podTemplate(label: label,
                 sh 'chmod +x ./kubectl'
                 sh 'mv ./kubectl /usr/local/bin'
                 sh 'mkdir -p ~/.kube'
-                sh 'echo "$KUBECONFIG" | base64 -d > ~/.kube/config'
-                sh 'cat ~/.kube/config'
+                sh 'echo $KUBE_CONFIG | base64 -d > ~/.kube/config'
                 sh 'export KUBECONFIG=~/.kube/config'
-                // sh 'kubectl version'
-                sh 'sed -i "s/gra-demo-image/${BUILD_IMG}:${BUILD_NUMBER}/g" k8s.yaml'
-                //   kubectl version
+                sh 'cat ~/.kube/config'
+                sh 'kubectl version --kubeconfig <(echo $KUBE_CONFIG | base64 --decode)'
+                sh 'kubectl version'
+                sh 'sed -i \"s/gra-demo-image/${BUILD_IMG}:${BUILD_NUMBER}/g\" k8s.yaml'
                 sh 'kubectl apply -f k8s.yaml'
             }
         }
