@@ -50,7 +50,7 @@ podTemplate(label: label,
                 sh 'export KUBECONFIG=~/.kube/config'
                 sh 'cat ~/.kube/config'
                 sh 'kubectl version'
-                sh 'sed -i \"s/gra-demo-image/${BUILD_IMG}:${BUILD_NUMBER}/g\" k8s.yaml'
+                sh 'sed -i \"s|gra-demo-image|${BUILD_IMG}:${BUILD_NUMBER}|g\" k8s.yaml'
                 sh 'kubectl apply -f k8s.yaml'
             }
         }
