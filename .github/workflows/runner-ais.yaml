@@ -64,4 +64,4 @@ jobs:
           echo ${{ secrets.KUBE_CONFIG_AIS }} | base64 -d > $KUBECONFIG
           sed -i "s/gra-demo-image/swr.${{ secrets.PROJECT_AIS }}.myhuaweicloud.com\/${{ secrets.ORGANIZATION_AIS }}\/gra-jy:${{ github.run_id }}/g" k8s-ais.yaml
           kubectl version
-          kubectl apply -f k8sais.yaml
+          kubectl apply -f k8s-ais.yaml
