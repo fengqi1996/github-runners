@@ -1,0 +1,21 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: modify-resources-clusterrole
+rules:
+- apiGroups: ["", "apps", "extensions", "batch", "rbac.authorization.k8s.io", "networking.k8s.io", "policy", "storage.k8s.io"]
+  resources: ["*"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: modify-resources-clusterrolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: modify-resources-clusterrole
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: github
