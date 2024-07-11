@@ -1,45 +1,45 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: gra-demo
-spec:
-  selector:
-    matchLabels:
-      app: gra-demo
-  template:
-    metadata:
-      labels:
-        app: gra-demo
-    spec:
-      containers:
-      - image: gra-demo-image
-        imagePullPolicy: IfNotPresent
-        name: gra-demo
-        env:
-        - name: branch
-      imagePullSecrets:
-        - name: default-secret
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: gra-demo
-  annotations:
-    kubernetes.io/elb.class: union
-    kubernetes.io/elb.autocreate: '{
-        "type": "public",
-        "bandwidth_name": "gra-demo",
-        "bandwidth_chargemode": "bandwidth",
-        "bandwidth_size": 5,
-        "bandwidth_sharetype": "PER",
-        "eip_type": "5_bgp",
-        "name": "ais-cce-demo"
-      }'
-    kubernetes.io/elb.enterpriseID: '0'
-spec:
-  selector:
-    app: gra-demo
-  ports:
-  - port: 9004
-    targetPort: 80
-  type: LoadBalancer
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: gra-demo
+# spec:
+#   selector:
+#     matchLabels:
+#       app: gra-demo
+#   template:
+#     metadata:
+#       labels:
+#         app: gra-demo
+#     spec:
+#       containers:
+#       - image: gra-demo-image
+#         imagePullPolicy: IfNotPresent
+#         name: gra-demo
+#         env:
+#         - name: branch
+#       imagePullSecrets:
+#         - name: default-secret
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: gra-demo
+#   annotations:
+#     kubernetes.io/elb.class: union
+#     kubernetes.io/elb.autocreate: '{
+#         "type": "public",
+#         "bandwidth_name": "gra-demo",
+#         "bandwidth_chargemode": "bandwidth",
+#         "bandwidth_size": 5,
+#         "bandwidth_sharetype": "PER",
+#         "eip_type": "5_bgp",
+#         "name": "ais-cce-demo"
+#       }'
+#     kubernetes.io/elb.enterpriseID: '0'
+# spec:
+#   selector:
+#     app: gra-demo
+#   ports:
+#   - port: 9004
+#     targetPort: 80
+#   type: LoadBalancer
