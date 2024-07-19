@@ -14,7 +14,7 @@ on:
       deploy_mode:
         type: choice
         description: Deployment mode
-        default: dryrun
+        # default: dryrun
         options:
           - apply 
           - dryrun
@@ -30,6 +30,7 @@ jobs:
     - name: Package step
       run: |
         echo "hello"
+        echo ${{ env.ENVIRONMENT }}
         echo "package"
   build:
     needs: package
