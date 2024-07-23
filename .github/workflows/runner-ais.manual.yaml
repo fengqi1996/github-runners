@@ -3,21 +3,20 @@ name: Onpenshift Monitoring Setup
 
 on:
   workflow_dispatch:
-    input:
-      env:
+    inputs:
+      name:
         type: choice
-        description: Enviroment
+        description: Who to greet
+        options: 
+        - monalisa
+        - cschleiden
+      message:
         required: true
-        default: "dev"
-        options:
-          "dev"
-      deploy_mode:
-        type: choice
-        description: Deployment mode
-        # default: dryrun
-        options:
-          - apply 
-          - dryrun
+      use-emoji:
+        type: boolean
+        description: Include 🎉🤣 emojis
+      environment:
+        type: environment
 
 env: 
   ENVIRONMENT: ${{ github.event.inputs.env }}
