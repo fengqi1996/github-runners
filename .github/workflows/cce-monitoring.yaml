@@ -45,8 +45,9 @@ jobs:
           echo ${{ secrets.KUBE_CONFIG_AIS }} | base64 -d > $KUBECONFIG
           kubectl version
 
-      # - name: Helm Template
-      #   run: |
-      #     echo "helm template prometheus/$CCE_MONITORING_HELM_CHART --namespace $CCE_MONITORING_HELM_NAMESPACE --name $CCE_MONITORING_HELM_RELEASE_NAME"
-      #     helm template prometheus/$CCE_MONITORING_HELM_CHART --namespace $CCE_MONITORING_HELM_NAMESPACE --name $CCE_MONITORING_HELM_RELEASE_NAME 
+      - name: Helm Template
+        run: |
+          helm dependency update prometheus/$CCE_MONITORING_HELM_CHARTs
+          helm template prometheus/$CCE_MONITORING_HELM_CHART --namespace $CCE_MONITORING_HELM_NAMESPACE --values prometheus/$CCE_MONITORING_HELM_CHART/values.yaml --output-dir prometheus/$CCE_MONITORING_HELM_CHART/output
+          cat prometheus/$CCE_MONITORING_HELM_CHART/output/templates/*.yaml
       
