@@ -1,0 +1,53 @@
+name: CCE Monitoring Setup
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        description: Environment
+        options: 
+        - cce-uat
+        - cce-sit
+        - cce-prod
+
+env: 
+  HELM_REPO: 'helm'
+  HELM_TEMPLATE: 'helm template'
+  ENVIRONMENT: ${{ github.event.inputs.environment }}
+  # HELM_REPO_URL: ''
+  CCE_MONITORING_HELM_CHART: 'kube-prometheus-stack'
+  CCE_MONITORING_HELM_RELEASE_NAME: 'cce-monitoring'
+  CCE_MONITORING_HELM_NAMESPACE: 'cce-monitoring'   
+
+jobs:
+  deploy-cce-monitoring-setup:
+    name: Deploy CCE Monitoring Setup
+    runs-on: [self-hosted, debian]
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v1
+        with:
+          version: 'v3.5.4'
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v1
+        with:
+          version: '1.18.8'
+
+      - name: Setup Dev Cluster Secrets
+        run: |
+          mkdir -p $HOME/.kube
+          export KUBECONFIG=$HOME/.kube/config
+          echo ${{ secrets.KUBE_CONFIG_AIS }} | base64 -d > $KUBECONFIG
+          kubectl version
+
+      # - name: Helm Template
+      #   run: |
+      #     echo "helm template prometheus/$CCE_MONITORING_HELM_CHART --namespace $CCE_MONITORING_HELM_NAMESPACE --name $CCE_MONITORING_HELM_RELEASE_NAME"
+      #     helm template prometheus/$CCE_MONITORING_HELM_CHART --namespace $CCE_MONITORING_HELM_NAMESPACE --name $CCE_MONITORING_HELM_RELEASE_NAME 
+      
