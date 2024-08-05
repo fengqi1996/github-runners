@@ -53,6 +53,7 @@ jobs:
 
       - name: Configure Git
         run: |
+          apt-get install -y git
           echo $GITHUB_ACTOR
           echo ${{ github.actor }}
           git config user.name "$GITHUB_ACTOR"
