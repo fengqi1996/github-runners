@@ -61,6 +61,19 @@ jobs:
           git config user.name "$github.actor"
           git config user.email "$github.actor@users.noreply.github.com"
 
+      - name: Package Helm Chart
+        run: |
+          helm package prometheus/$CCE_MONITORING_HELM_CHART -d ./charts
+          helm repo index charts/ --url https://oversampling.github.io/github-runners/charts
+
+      - name: Commit Helm Package
+        run: |
+          git add ./charts/*
+          git commit -m "Add packaged Helm chart"
+          git push origin main
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.6.0
         with:
