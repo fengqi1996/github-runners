@@ -49,5 +49,5 @@ jobs:
         run: |
           helm dependency update prometheus/$CCE_MONITORING_HELM_CHART
           helm template prometheus/$CCE_MONITORING_HELM_CHART --namespace $CCE_MONITORING_HELM_NAMESPACE --values prometheus/$CCE_MONITORING_HELM_CHART/values.yaml --output-dir prometheus/$CCE_MONITORING_HELM_CHART/output
-          prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/prometheus/prometheus.yaml
+          cat prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/prometheus/prometheus.yaml
       
