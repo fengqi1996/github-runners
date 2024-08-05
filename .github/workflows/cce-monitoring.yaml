@@ -53,6 +53,8 @@ jobs:
 
       - name: Configure Git
         run: |
+          echo $GITHUB_ACTOR
+          echo ${{ github.actor }}
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
