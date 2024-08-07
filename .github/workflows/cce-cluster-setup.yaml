@@ -22,7 +22,7 @@ env:
 jobs:
   terraform:
     name: 'Terraform Apply'
-    runs-on: debian
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
