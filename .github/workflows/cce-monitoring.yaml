@@ -53,13 +53,6 @@ jobs:
           helm template prometheus/$CCE_MONITORING_HELM_CHART --namespace $CCE_MONITORING_HELM_NAMESPACE --values prometheus/$CCE_MONITORING_HELM_CHART/values.yaml --output-dir prometheus/$CCE_MONITORING_HELM_CHART/output
           cat prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/prometheus/prometheus.yaml
 
-      - name: Deploy Storage Class
-
-      - name: Cluster Monitoring Config
-
-      - name: User monitoring Config
-
-
       - name: Configure Git
         working-directory: ${{ github.workspace }}
         run: |
