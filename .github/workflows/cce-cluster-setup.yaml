@@ -10,6 +10,15 @@ on:
         - cce-uat
         - cce-sit
         - cce-prod
+env:
+  HW_ACCESS_KEY: ${{ secrets.HW_ACCESS_KEY }}
+  HW_SECRET_KEY: ${{ secrets.HW_SECRET_KEY }}
+  PASSWORD: ${{ secrets.ECS_ROOT_PWD }}
+  PROJECT_ID: ${{ secrets.PROJECT_ID }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.HW_ACCESS_KEY }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.HW_SECRET_KEY }}
+  ENVIRONMENT: ${{ github.event.inputs.environment }}
+
 jobs:
   terraform:
     name: 'Terraform Apply'
@@ -22,17 +31,7 @@ jobs:
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
       with:
-        terraform_version: 1.1.7
-
-    - name: Configure Huawei Cloud credentials
-      env:
-        HW_ACCESS_KEY: ${{ secrets.HW_ACCESS_KEY }}
-        HW_SECRET_KEY: ${{ secrets.HW_SECRET_KEY }}
-        PASSWORD: ${{ secrets.ECS_ROOT_PWD }}
-        PROJECT_ID: ${{ secrets.PROJECT_ID }}
-        AWS_ACCESS_KEY_ID: ${{ secrets.HW_ACCESS_KEY }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.HW_SECRET_KEY }}
-        ENVIRONMENT: ${{ github.event.inputs.environment }}
+        terraform_version: 1.1.7   
 
     - name: Initialize Terraform
       run: terraform init
