@@ -36,5 +36,5 @@ jobs:
       id: plan
       run: |
         terraform init
-        TF_VAR_environment=$ENVIRONMENT TF_VAR_secret_key=$HW_SECRET_KEY TF_VAR_access_key=$HW_ACCESS_KEY TF_VAR_password=$PASSWORD TF_VAR_project_ID=$PROJECT_ID terraform plan
+        TF_VAR_environment=${{ env.ENVIRONMENT}} TF_VAR_secret_key=${{ env.HW_SECRET_KEY }} TF_VAR_access_key=${{ env.HW_ACCESS_KEY }} TF_VAR_password=${{ env.PASSWORD }} TF_VAR_project_ID=${{ env.PROJECT_ID }} terraform plan
 
