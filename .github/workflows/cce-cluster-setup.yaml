@@ -37,6 +37,7 @@ jobs:
       run: terraform init
 
     - name: Plan Terraform
+      working-directory: ${{ github.workspace }}/terraform
       id: plan
       run: TF_VAR_environment=$ENVIRONMENT TF_VAR_secret_key=$HW_SECRET_KEY TF_VAR_access_key=$HW_ACCESS_KEY TF_VAR_password=$PASSWORD TF_VAR_project_ID=$PROJECT_ID terraform plan
 
