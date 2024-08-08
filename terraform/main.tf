@@ -60,103 +60,163 @@ resource "huaweicloud_vpc_subnet" "cce-subnet" {
   vpc_id        = huaweicloud_vpc.cce-vpc.id
 }
 
-resource "huaweicloud_vpc_eip" "cce-control-plane-eip" {
-  publicip {
-    type = "5_bgp"
-  }
-  bandwidth {
-    name        = "mybandwidth"
-    size        = 10
-    share_type  = "PER"
-    charge_mode = "traffic"
-  }
-}
-
-resource "random_string" "random_suffix" {
-  length  = 8
-  special = false
-}
-
-resource "huaweicloud_cce_cluster" "huawei-cce" {
-  name                   = "huawei-cce-${var.environment}-${random_string.random_suffix.result}"
-  flavor_id              = "cce.s1.small" # 50 Nodes
-  vpc_id                 = huaweicloud_vpc.cce-vpc.id
-  subnet_id              = huaweicloud_vpc_subnet.cce-subnet.id
-  container_network_type = "overlay_l2"
-  eip                    = huaweicloud_vpc_eip.cce-control-plane-eip.address
-  cluster_version        = "v1.29"
-  enterprise_project_id  = var.project_ID
-}
-
-
-data "huaweicloud_availability_zones" "cce-az" {
-  region = "ap-southeast-3"
-}
-
-resource "huaweicloud_cce_node" "cce-node" {
-  cluster_id        = huaweicloud_cce_cluster.huawei-cce.id
-  name              = "cce-node--${var.environment}-${random_string.random_suffix.result}"
-  flavor_id         = "c7n.xlarge.2"
-  availability_zone = data.huaweicloud_availability_zones.cce-az.names[0]
-  password          = var.password
-  runtime           = "docker"
-  root_volume {
-    size       = 40
-    volumetype = "SAS"
-  }
-  data_volumes {
-    size       = 100
-    volumetype = "SAS"
-  }
-}
-
-# variable "cluster_id" {
-#   type = string
-#   default = "33e24729-1dc9-11ef-abd5-0255ac100039"
+# resource "huaweicloud_vpc_eip" "cce-control-plane-eip" {
+#   publicip {
+#     type = "5_bgp"
+#   }
+#   bandwidth {
+#     name        = "mybandwidth"
+#     size        = 10
+#     share_type  = "PER"
+#     charge_mode = "traffic"
+#   }
 # }
 
-variable "addon_name" {
-  type = string
-  default = "cie-collector"
-}
+# resource "random_string" "random_suffix" {
+#   length  = 8
+#   special = false
+#   upper   = false
+# }
 
-variable "addon_version" {
-  type = string
-  default = "3.10.1"
-}
+# resource "huaweicloud_cce_cluster" "huawei-cce" {
+#   name                   = "huawei-ais-${var.environment}-${random_string.random_suffix.result}"
+#   flavor_id              = "cce.s1.small" # 50 Nodes
+#   vpc_id                 = huaweicloud_vpc.cce-vpc.id
+#   subnet_id              = huaweicloud_vpc_subnet.cce-subnet.id
+#   container_network_type = "overlay_l2"
+#   eip                    = huaweicloud_vpc_eip.cce-control-plane-eip.address
+#   cluster_version        = "v1.29"
+#   enterprise_project_id  = var.project_ID
+#   masters {
+#     availability_zone = "ap-southeast-3a"
+#   }
+#   masters {
+#     availability_zone = "ap-southeast-3b"
+#   }
+#   masters {
+#     availability_zone = "ap-southeast-3c"
+#   }
+# }
 
-data "huaweicloud_cce_addon_template" "cie-collector" {
-  cluster_id = huaweicloud_cce_cluster.huawei-cce.id
-  name       = var.addon_name
-  version    = var.addon_version
-}
 
-resource "huaweicloud_cce_addon" "cie-collector" {
-  cluster_id    = huaweicloud_cce_cluster.huawei-cce.id
-  template_name = var.addon_name
-  # version       = var.addon_version
-  values {
-    basic_json  = jsonencode(jsondecode(data.huaweicloud_cce_addon_template.cie-collector.spec).basic)
-    custom_json = jsonencode(merge(
-      jsondecode(data.huaweicloud_cce_addon_template.cie-collector.spec).parameters.custom,
-      {
-        cluster_id = huaweicloud_cce_cluster.huawei-cce.id
-        tenant_id  = var.project_ID
-        retention  = "7d"
-        enable_nodeAffinity=false
-        shards = 2
-        # storage_class="csi-obs"
-        # storage_size="15Gi"
-        # storage_type="STANDARD"
-        supportServerModeSharding=true
-        highAvailability=true
-        scrapeInterval="16s"
-        enable_grafana=false
+# data "huaweicloud_availability_zones" "cce-az" {
+#   region = "ap-southeast-3"
+# }
+
+# resource "huaweicloud_cce_node" "cce-node" {
+#   cluster_id        = huaweicloud_cce_cluster.huawei-cce.id
+#   name              = "cce-node--${var.environment}-${random_string.random_suffix.result}"
+#   flavor_id         = "c7n.xlarge.2"
+#   availability_zone = data.huaweicloud_availability_zones.cce-az.names[0]
+#   password          = var.password
+#   runtime           = "containerd"
+#   root_volume {
+#     size       = 40
+#     volumetype = "SAS"
+#   }
+#   data_volumes {
+#     size       = 100
+#     volumetype = "SAS"
+#   }
+# }
+
+# resource "huaweicloud_cce_node_pool" "node_pool" {
+#   cluster_id               = huaweicloud_cce_cluster.huawei-cce.id
+#   name                     = "CCE_Node_Pool"
+#   initial_node_count       = 2
+#   flavor_id                = "c7n.xlarge.2"
+#   password                 = var.password
+#   scall_enable             = true
+#   min_node_count           = 2
+#   max_node_count           = 10
+#   scale_down_cooldown_time = 100
+#   priority                 = 1
+#   type                     = "vm"
+#   runtime                  = "containerd"
+
+#   root_volume {
+#     size       = 40
+#     volumetype = "SAS"
+#   }
+#   data_volumes {
+#     size       = 100
+#     volumetype = "SAS"
+#   }
+# }
+
+# # variable "cluster_id" {
+# #   type = string
+# #   default = "33e24729-1dc9-11ef-abd5-0255ac100039"
+# # }
+
+# variable "addon_name" {
+#   type = string
+#   default = "cie-collector"
+# }
+
+# variable "addon_version" {
+#   type = string
+#   default = "3.10.1"
+# }
+
+# data "huaweicloud_cce_addon_template" "cie-collector" {
+#   cluster_id = huaweicloud_cce_cluster.huawei-cce.id
+#   name       = var.addon_name
+#   version    = var.addon_version
+# }
+
+# resource "huaweicloud_cce_addon" "cie-collector" {
+#   cluster_id    = huaweicloud_cce_cluster.huawei-cce.id
+#   template_name = var.addon_name
+#   # version       = var.addon_version
+#   values {
+#     basic_json  = jsonencode(jsondecode(data.huaweicloud_cce_addon_template.cie-collector.spec).basic)
+#     custom_json = jsonencode(merge(
+#       jsondecode(data.huaweicloud_cce_addon_template.cie-collector.spec).parameters.custom,
+#       {
+#         cluster_id = huaweicloud_cce_cluster.huawei-cce.id
+#         tenant_id  = var.project_ID
+#         retention  = "1d"
+#         enable_nodeAffinity=false
+#         shards = 2
+#         # storage_class="csi-obs"
+#         # storage_size="15Gi"
+#         # storage_type="STANDARD"
+#         supportServerModeSharding=true
+#         highAvailability=true
+#         scrapeInterval="16s"
+#         enable_grafana=false
         
-      }
-    ))
-    flavor_json = jsonencode(
-      jsondecode(data.huaweicloud_cce_addon_template.cie-collector.spec).parameters.flavor7,
-    )
-  }
-}
+#       }
+#     ))
+#     flavor_json = jsonencode(
+#       jsondecode(data.huaweicloud_cce_addon_template.cie-collector.spec).parameters.flavor7,
+#     )
+#   }
+# }
+
+# resource "huaweicloud_vpc_eip" "cce-nat-eip" {
+#   publicip {
+#     type = "5_bgp"
+#   }
+#   bandwidth {
+#     name        = "nat-bandwidth"
+#     size        = 10
+#     share_type  = "PER"
+#     charge_mode = "traffic"
+#   }
+# }
+
+# resource "huaweicloud_nat_gateway" "cce-nat" {
+#   name        = "cce-nat-${var.environment}-${random_string.random_suffix.result}"
+#   description = "test for terraform"
+#   spec        = "2"
+#   vpc_id      = huaweicloud_vpc.cce-vpc.id
+#   subnet_id   = huaweicloud_vpc_subnet.cce-subnet.id
+# }
+
+# resource "huaweicloud_nat_snat_rule" "cce-snat-rule" {
+#   nat_gateway_id = huaweicloud_nat_gateway.cce-nat.id
+#   floating_ip_id = huaweicloud_vpc_eip.cce-nat-eip.id
+#   subnet_id      = huaweicloud_vpc_subnet.cce-subnet.id
+# }
