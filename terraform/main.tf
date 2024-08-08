@@ -48,7 +48,7 @@ terraform {
 }
 
 resource "huaweicloud_vpc" "cce-vpc" {
-  name                  = "cce-vpc"
+  name                  = "cce-vpc-${var.environment}-${random_string.random_suffix.result}"
   cidr                  = "192.168.0.0/16"
   enterprise_project_id = var.project_ID
 }
@@ -65,7 +65,7 @@ resource "huaweicloud_vpc_eip" "cce-control-plane-eip" {
     type = "5_bgp"
   }
   bandwidth {
-    name        = "mybandwidth"
+    name        = "cce-control-plane-eip-${var.environment}-${random_string.random_suffix.result}"
     size        = 10
     share_type  = "PER"
     charge_mode = "traffic"
@@ -80,7 +80,7 @@ resource "random_string" "random_suffix" {
 
 resource "huaweicloud_cce_cluster" "huawei-cce" {
   name                   = "huawei-ais-${var.environment}-${random_string.random_suffix.result}"
-  flavor_id              = "cce.s1.small" # 50 Nodes
+  flavor_id              = "cce.s2.small" # HA, 50 Nodes
   vpc_id                 = huaweicloud_vpc.cce-vpc.id
   subnet_id              = huaweicloud_vpc_subnet.cce-subnet.id
   container_network_type = "overlay_l2"
@@ -105,7 +105,7 @@ data "huaweicloud_availability_zones" "cce-az" {
 
 resource "huaweicloud_cce_node" "cce-node" {
   cluster_id        = huaweicloud_cce_cluster.huawei-cce.id
-  name              = "cce-node--${var.environment}-${random_string.random_suffix.result}"
+  name              = "cce-node-${var.environment}-${random_string.random_suffix.result}"
   flavor_id         = "c7n.xlarge.2"
   availability_zone = data.huaweicloud_availability_zones.cce-az.names[0]
   password          = var.password
@@ -122,7 +122,7 @@ resource "huaweicloud_cce_node" "cce-node" {
 
 resource "huaweicloud_cce_node_pool" "node_pool" {
   cluster_id               = huaweicloud_cce_cluster.huawei-cce.id
-  name                     = "CCE_Node_Pool"
+  name                     = "cce-node-pool-${var.environment}-${random_string.random_suffix.result}"
   initial_node_count       = 2
   flavor_id                = "c7n.xlarge.2"
   password                 = var.password
@@ -200,7 +200,7 @@ resource "huaweicloud_vpc_eip" "cce-nat-eip" {
     type = "5_bgp"
   }
   bandwidth {
-    name        = "nat-bandwidth"
+    name        = "cce-nat-eip-${var.environment}-${random_string.random_suffix.result}"
     size        = 10
     share_type  = "PER"
     charge_mode = "traffic"
