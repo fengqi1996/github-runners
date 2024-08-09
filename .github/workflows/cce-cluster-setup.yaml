@@ -40,7 +40,7 @@ jobs:
       run: |
         terraform init
         terraform workspace select -or-create ${{ env.ENVIRONMENT }} 
-        TF_VAR_environment=${{ env.ENVIRONMENT}} TF_VAR_secret_key=${{ env.HW_SECRET_KEY }} TF_VAR_access_key=${{ env.HW_ACCESS_KEY }} TF_VAR_password=${{ env.PASSWORD }} TF_VAR_project_ID=${{ env.PROJECT_ID }} terraform 
+        TF_VAR_environment=${{ env.ENVIRONMENT}} TF_VAR_secret_key=${{ env.HW_SECRET_KEY }} TF_VAR_access_key=${{ env.HW_ACCESS_KEY }} TF_VAR_password=${{ env.PASSWORD }} TF_VAR_project_ID=${{ env.PROJECT_ID }} terraform plan
 
     - name: Apply Terraform
       working-directory: ${{ github.workspace }}/terraform
