@@ -182,16 +182,15 @@ resource "huaweicloud_cce_addon" "cie-collector" {
         cluster_id = huaweicloud_cce_cluster.huawei-cce.id
         tenant_id  = var.project_ID
         retention  = "1d"
-        enable_nodeAffinity=false
+        enable_nodeAffinity=true
         shards = 2
         storage_class="csi-disk-topology"
         storage_size="15Gi"
         storage_type="SAS"
         supportServerModeSharding=true
-        highAvailability=true
-        scrapeInterval="20s" # 5 seconds interval
-        enable_grafana=false
-        
+        highAvailability=true # Two Replicas data
+        scrapeInterval="20s" # 5 seconds interval, 15s, 20s, 25s, 30s...
+        enable_grafana=true 
       }
     ))
     flavor_json = jsonencode(
@@ -216,6 +215,13 @@ resource "huaweicloud_nat_gateway" "cce-nat" {
   name        = "cce-nat-${var.environment}-${random_string.random_suffix.result}"
   description = "test for terraform"
   spec        = "2"
+  # Reference Spec: https://registry.terraform.io/providers/huaweicloud/huaweicloud/latest/docs/resources/nat_gateway
+  # spec - (Required, String) Specifies the specification of the NAT gateway. The valid values are as follows:
+
+  # 1: Small type, which supports up to 10,000 SNAT connections.
+  # 2: Medium type, which supports up to 50,000 SNAT connections.
+  # 3: Large type, which supports up to 200,000 SNAT connections.
+  # 4: Extra-large type, which supports up to 1,000,000 SNAT connections.
   vpc_id      = huaweicloud_vpc.cce-vpc.id
   subnet_id   = huaweicloud_vpc_subnet.cce-subnet.id
 }
