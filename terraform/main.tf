@@ -17,7 +17,7 @@ variable "project_ID" {
 
 variable "availability_zone" {
   type = string
-  default = "ap-southeast-3"
+  default = "ap-southeast-2"
 }
 
 variable "environment" {
@@ -34,10 +34,10 @@ provider "huaweicloud" {
 terraform {
   backend "s3" {
     # Reference: https://registry.terraform.io/providers/huaweicloud/hcso/latest/docs/guides/remote-state-backend
-    bucket   = "ais-test-jy"
+    bucket   = "ais-test-terraform"
     key      = "terraform.tfstate"
-    region   = "ap-southeast-3"
-    endpoint = "https://obs.ap-southeast-3.myhuaweicloud.com"
+    region   = "ap-southeast-2"
+    endpoint = "https://obs.ap-southeast-2.myhuaweicloud.com"
 
     skip_region_validation      = true
     skip_credentials_validation = true
@@ -80,7 +80,7 @@ resource "random_string" "random_suffix" {
 
 resource "huaweicloud_cce_cluster" "huawei-cce" {
   name                   = "huawei-ais-${var.environment}-${random_string.random_suffix.result}"
-  flavor_id              = "cce.s2.small" # HA, 50 Nodes
+  flavor_id              = "cce.s2.small" # HA, 50 Nodes -- cce.s2.xlarge, HA, 2000 Nodes
   vpc_id                 = huaweicloud_vpc.cce-vpc.id
   subnet_id              = huaweicloud_vpc_subnet.cce-subnet.id
   container_network_type = "overlay_l2"
@@ -88,19 +88,19 @@ resource "huaweicloud_cce_cluster" "huawei-cce" {
   cluster_version        = "v1.29"
   enterprise_project_id  = var.project_ID
   masters {
-    availability_zone = "ap-southeast-3a"
+    availability_zone = "ap-southeast-2a"
   }
   masters {
-    availability_zone = "ap-southeast-3b"
+    availability_zone = "ap-southeast-2b"
   }
   masters {
-    availability_zone = "ap-southeast-3c"
+    availability_zone = "ap-southeast-2c"
   }
 }
 
 
 data "huaweicloud_availability_zones" "cce-az" {
-  region = "ap-southeast-3"
+  region = "ap-southeast-2"
 }
 
 resource "huaweicloud_cce_node" "cce-node" {
@@ -109,7 +109,8 @@ resource "huaweicloud_cce_node" "cce-node" {
   flavor_id         = "c7n.xlarge.2"
   availability_zone = data.huaweicloud_availability_zones.cce-az.names[0]
   password          = var.password
-  runtime           = "containerd"
+  runtime           = "docker"
+  os                = "EulerOS 2.9"
   root_volume {
     size       = 40
     volumetype = "SAS"
@@ -123,17 +124,21 @@ resource "huaweicloud_cce_node" "cce-node" {
 resource "huaweicloud_cce_node_pool" "node_pool" {
   cluster_id               = huaweicloud_cce_cluster.huawei-cce.id
   name                     = "cce-node-pool-${var.environment}-${random_string.random_suffix.result}"
+  os                       = "EulerOS 2.9"
   initial_node_count       = 2
   flavor_id                = "c7n.xlarge.2"
   password                 = var.password
   scall_enable             = true
-  min_node_count           = 2
+  min_node_count           = 3
   max_node_count           = 10
   scale_down_cooldown_time = 100
   priority                 = 1
   type                     = "vm"
-  runtime                  = "containerd"
+  # runtime                  = "containerd"
 
+  labels = {
+    "cce-node-pool" = "cce-node-pool-${var.environment}-${random_string.random_suffix.result}"
+  }
   root_volume {
     size       = 40
     volumetype = "SAS"
@@ -144,10 +149,10 @@ resource "huaweicloud_cce_node_pool" "node_pool" {
   }
 }
 
-# variable "cluster_id" {
-#   type = string
-#   default = "33e24729-1dc9-11ef-abd5-0255ac100039"
-# }
+variable "cluster_id" {
+  type = string
+  default = "33e24729-1dc9-11ef-abd5-0255ac100039"
+}
 
 variable "addon_name" {
   type = string
@@ -184,7 +189,7 @@ resource "huaweicloud_cce_addon" "cie-collector" {
         storage_type="SAS"
         supportServerModeSharding=true
         highAvailability=true
-        scrapeInterval="15s"
+        scrapeInterval="20s" # 5 seconds interval
         enable_grafana=false
         
       }
