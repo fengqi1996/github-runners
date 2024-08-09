@@ -185,7 +185,7 @@ resource "huaweicloud_cce_addon" "cie-collector" {
         enable_nodeAffinity=true
         shards = 2
         storage_class="csi-disk-topology"
-        storage_size="15Gi"
+        storage_size="20Gi"
         storage_type="SAS"
         supportServerModeSharding=true
         highAvailability=true # Two Replicas data
