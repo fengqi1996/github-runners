@@ -125,7 +125,7 @@ resource "huaweicloud_cce_node_pool" "node_pool" {
   cluster_id               = huaweicloud_cce_cluster.huawei-cce.id
   name                     = "cce-node-pool-${var.environment}-${random_string.random_suffix.result}"
   os                       = "EulerOS 2.9"
-  initial_node_count       = 2
+  initial_node_count       = 3
   flavor_id                = "c7n.xlarge.2"
   password                 = var.password
   scall_enable             = true
