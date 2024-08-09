@@ -197,6 +197,7 @@ resource "huaweicloud_cce_addon" "cie-collector" {
       jsondecode(data.huaweicloud_cce_addon_template.cie-collector.spec).parameters.flavor7,
     )
   }
+  depends_on = [ huaweicloud_cce_node_pool.node_pool, huaweicloud_cce_node.cce-node ]
 }
 
 resource "huaweicloud_vpc_eip" "cce-nat-eip" {
