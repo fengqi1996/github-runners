@@ -200,6 +200,12 @@ resource "huaweicloud_cce_addon" "cie-collector" {
   depends_on = [ huaweicloud_cce_node_pool.node_pool, huaweicloud_cce_node.cce-node ]
 }
 
+resource "huaweicloud_cce_addon" "grafana" {
+  cluster_id    = huaweicloud_cce_cluster.huawei-cce.id
+  template_name = "grafana"
+  depends_on = [ huaweicloud_cce_node_pool.node_pool, huaweicloud_cce_node.cce-node ]
+}
+
 resource "huaweicloud_vpc_eip" "cce-nat-eip" {
   publicip {
     type = "5_bgp"
