@@ -34,7 +34,7 @@ jobs:
       uses: hashicorp/setup-terraform@v3
 
     - name: Plan Terraform
-      working-directory: ./environment
+      working-directory: ${{ github.workspace }}/environment
       id: plan
       run: |
         terraform init
