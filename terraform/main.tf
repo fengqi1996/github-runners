@@ -85,7 +85,7 @@ resource "huaweicloud_cce_cluster" "huawei-cce" {
   subnet_id              = huaweicloud_vpc_subnet.cce-subnet.id
   container_network_type = "overlay_l2"
   eip                    = huaweicloud_vpc_eip.cce-control-plane-eip.address
-  cluster_version        = "v1.29"
+  cluster_version        = "v1.28"
   enterprise_project_id  = var.project_ID
   masters {
     availability_zone = "ap-southeast-2a"
