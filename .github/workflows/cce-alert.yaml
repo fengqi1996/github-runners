@@ -1,0 +1,44 @@
+# Initialize Your CIE installation first before run this pipeline.
+name: Alertmanager
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        description: Environment
+        options: 
+        - uat
+        - staging
+env:
+  KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_AIS }}
+  ENVIRONMENT: ${{ github.event.inputs.environment }}
+  SMTP_PWD: ${{ secrets.SMTP_PWD }}
+
+jobs:
+  alertmanager:
+    name: 'Alert Manager Setup'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Kubectl tool installer
+      uses: Azure/setup-kubectl@v4.0.0
+      with:
+        version: latest
+
+    - name: Setup Credential
+      working-directory: ${{ github.workspace }}/prometheus
+      run: |
+        sed -i 's/smtppassword/${{ env.SMTP_PWD }}/g' alertrule.${{ env.ENVIRONMENT }}.secret.yaml
+        export KUBECONFIG=$HOME/.kube/config
+        echo ${{ env.KUBE_CONFIG }} | base64 -d > $KUBECONFIG
+
+    - name: Apply Prometheus Rule and Alert Configuration
+      working-directory: ${{ github.workspace }}/prometheus
+      run: | 
+        kubectl apply -f alertrule.${{ env.ENVIRONMENT }}.secret.yaml -n monitoring
+        kubectl apply -f prometheusrules.${{ env.ENVIRONMENT }}.yaml -n monitoring
+        
