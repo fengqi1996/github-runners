@@ -47,4 +47,6 @@ jobs:
       working-directory: ${{ github.workspace }}
       run: |
         helm template prometheus/$CCE_MONITORING_HELM_CHART --namespace $CCE_MONITORING_HELM_NAMESPACE --values prometheus/environment/${{ env.ENVIRONMENT }}.values.yaml --output-dir prometheus/$CCE_MONITORING_HELM_CHART/output
-        cat prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/prometheus/prometheus.yaml
+        cat prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/prometheus.rules.yaml
+        cat prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/alertrule.secret.yaml
+        cat prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/prometheus.yaml
