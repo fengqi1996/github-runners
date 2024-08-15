@@ -1,0 +1,36 @@
+prometheus:
+  prometheusSpec:
+    resources: # .Values.prometheus.prometheusSpec.resources 
+      limits:
+        cpu: "2"
+        memory: 8Gi
+      requests:
+        cpu: 500m
+        memory: 2Gi
+    retention: "15d" # .Values.prometheus.prometheusSpec.retention | quote
+    scrapeInterval: "20s" # .Values.prometheus.prometheusSpec.scrapeInterval
+    scrapeTimeout: "10s" # .Values.prometheus.prometheusSpec.scrapeTimeout
+    shards: 2 # .Values.prometheus.prometheusSpec.shards
+    storageSpec: 
+      volumeClaimTemplate:
+        metadata:
+          annotations:
+            everest.io/disk-volume-type: SAS
+          labels:
+            app: prometheus
+          name: pvc
+        spec:
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: 20Gi
+          storageClassName: csi-disk-topology
+    thanos:
+      resources: # .Values.prometheus.prometheusSpec.thanos.resources
+        limits:
+          cpu: "1"
+          memory: 4Gi
+        requests:
+          cpu: 500m
+          memory: 2Gi
