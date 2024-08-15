@@ -1,0 +1,13 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    role: operator-prometheus
+  name: operator-prometheus
+  namespace: monitoring
+spec:
+{{- if .Values.prometheusRule }}
+  groups:
+{{ toYaml .Values.prometheusRule | indent 4 }}
+{{- end }}
+  

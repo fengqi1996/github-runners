@@ -34,3 +34,43 @@ prometheus:
         requests:
           cpu: 500m
           memory: 2Gi
+
+prometheusRule:
+  - name: test-rule-ais
+    rules:
+    - alert: NodeUnschedulable
+      expr: kube_node_spec_unschedulable == 1
+      for: 30s
+      labels:
+        severity: critical
+      annotations:
+        summary: "Node {{ $labels.node }} is unschedulable"
+        description: "Node {{ $labels.node }} has been unschedulable for more than 30 seconds."
+
+alertmanagerConfig:
+  global:
+    smtp_smarthost: 'smtp.gmail.com:587'
+    smtp_from: 'chan1992241@gmail.com'
+    smtp_auth_username: 'chan1992241@gmail.com'
+    smtp_auth_password: smtppassword
+    smtp_require_tls: true
+    resolve_timeout: 1m
+
+  route:
+    receiver: 'gmail-notifications'
+
+  receivers:
+    - name: 'gmail-notifications'
+      email_configs:
+      - to: chan1992241@gmail.com
+        from: chan1992241@gmail.com
+        smarthost: smtp.gmail.com:587
+        auth_username: chan1992241@gmail.com
+        auth_identity: chan1992241@gmail.com
+        auth_password: smtppassword
+        send_resolved: true
+    - name: 'null'
+    - name: FMGateway
+      webhook_configs:
+        - url: >-
+            http://flask-alert-webhook.alert-service-dev.svc.cluster.local:8080/aistest
