@@ -33,6 +33,7 @@ jobs:
       working-directory: ${{ github.workspace }}/prometheus
       run: |
         sed -i 's/smtppassword/${{ env.SMTP_PWD }}/g' alertrule.${{ env.ENVIRONMENT }}.secret.yaml
+        mkdir -p $HOME/.kube
         export KUBECONFIG=$HOME/.kube/config
         echo ${{ env.KUBE_CONFIG }} | base64 -d > $KUBECONFIG
 
