@@ -1,0 +1,182 @@
+# Please edit the object below. Lines beginning with a '#' will be ignored,
+# and an empty file will abort the edit. If an error occurs while saving this file will be
+# reopened with the relevant failures.
+#
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  annotations:
+    meta.helm.sh/release-name: cceaddon-cie-collector
+    meta.helm.sh/release-namespace: monitoring
+  generation: 2
+  labels:
+    app: prometheus-server
+    app.kubernetes.io/managed-by: Helm
+    release: cceaddon-cie-collector
+  name: server
+  namespace: monitoring
+spec:
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: app
+            operator: In
+            values:
+            - prometheus-server
+        topologyKey: kubernetes.io/hostname
+  alerting:
+    alertmanagers:
+    - apiVersion: v2
+      name: alertmanager
+      namespace: monitoring
+      pathPrefix: /
+      port: http-web
+  containers:
+  - env:
+    - name: POD_IP
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.podIP
+    - name: HOSTNAME
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.name
+    - name: PAAS_CRYPTO_PATH
+      value: /etc/cipher
+    - name: CIE_AUTH
+      value: "true"
+    - name: CRYPTO_ENABLE
+      value: "true"
+    image: swr.ap-southeast-2.myhuaweicloud.com/hwofficial/prometheus-server:3.10.1
+    livenessProbe:
+      failureThreshold: 6
+      httpGet:
+        path: /-/healthy
+        port: 9090
+        scheme: HTTP
+      initialDelaySeconds: 10
+      periodSeconds: 30
+      successThreshold: 1
+      timeoutSeconds: 30
+    name: prometheus
+    securityContext:
+      allowPrivilegeEscalation: false
+    startupProbe:
+      failureThreshold: 12
+      httpGet:
+        path: /-/ready
+        port: 9090
+        scheme: HTTP
+      initialDelaySeconds: 10
+      periodSeconds: 15
+      successThreshold: 1
+      timeoutSeconds: 2
+  - env:
+    - name: POD_IP
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.podIP
+    image: swr.ap-southeast-2.myhuaweicloud.com/hwofficial/prometheus-config-reloader:3.10.1
+    name: config-reloader
+    securityContext:
+      allowPrivilegeEscalation: false
+  - env:
+    - name: POD_PROM_IP
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.podIP
+    - name: PAAS_CRYPTO_PATH
+      value: /etc/cipher
+    - name: CRYPTO_ENABLE
+      value: "true"
+    name: thanos-sidecar
+  enableAdminAPI: false
+  enableFeatures:
+  - remote-write-receiver
+  evaluationInterval: 1m
+  externalLabels:
+    cluster: 2edacaea-5923-11ef-9694-0255ac100103
+    cluster_category: CCE
+  imagePullPolicy: IfNotPresent
+  imagePullSecrets:
+  - name: default-secret
+  listenLocal: false
+  logFormat: logfmt
+  logLevel: info
+  paused: false
+  podMetadata:
+    labels:
+      app: prometheus-server
+      openvessel.io/monitoring-prometheus-mode: server
+      release: cceaddon-cie-collector
+    name: prometheus-server
+  podMonitorNamespaceSelector: {}
+  podMonitorSelector: {}
+  portName: web
+  probeNamespaceSelector: {}
+  probeSelector: {}
+  query:
+    lookbackDelta: 3m
+  replicas: {{ .Values.prometheus.prometheusSpec.replicas }}
+{{- if .Values.prometheus.prometheusSpec.resources }}
+  resources:
+{{ toYaml .Values.prometheus.prometheusSpec.resources | indent 4 }}
+{{- end }}
+  retention: {{ .Values.prometheus.prometheusSpec.retention | quote }}# Need to redeploy your pods
+  routePrefix: /
+  ruleNamespaceSelector: {}
+  ruleSelector:
+    matchLabels:
+      role: operator-prometheus
+  scrapeInterval: {{ .Values.prometheus.prometheusSpec.scrapeInterval }}
+  scrapeTimeout: {{ .Values.prometheus.prometheusSpec.scrapeTimeout }}
+  securityContext:
+    fsGroup: 10000
+    runAsGroup: 10000
+    runAsNonRoot: true
+    runAsUser: 10000
+  serviceAccountName: prometheus-server
+  serviceMonitorNamespaceSelector: {}
+  serviceMonitorSelector: {}
+  shards: {{ .Values.prometheus.prometheusSpec.shards }}
+{{- if .Values.prometheus.prometheusSpec.storageSpec }}
+  storage:
+{{ tpl (toYaml .Values.prometheus.prometheusSpec.storageSpec | indent 4) . }}
+{{- end }}
+  thanos:
+    httpListenLocal: true
+    image: swr.ap-southeast-2.myhuaweicloud.com/hwofficial/thanos:3.10.1
+{{- if .Values.prometheus.prometheusSpec.thanos.resources }}
+    resources:
+{{ tpl (toYaml .Values.prometheus.prometheusSpec.thanos.resources | indent 6) . }}
+{{- end }}
+    volumeMounts:
+    - mountPath: /etc/cipher/root.key
+      name: rootkey
+      readOnly: true
+    - mountPath: /etc/cipher/common_shared.key
+      name: commonsharedkey
+      readOnly: true
+  version: 2.37.8
+  volumeMounts:
+  - mountPath: /etc/cipher/root.key
+    name: rootkey
+    readOnly: true
+  - mountPath: /etc/cipher/common_shared.key
+    name: commonsharedkey
+    readOnly: true
+  volumes:
+  - hostPath:
+      path: /var/paas/srv/kubernetes/root.key
+      type: ""
+    name: rootkey
+  - hostPath:
+      path: /var/paas/srv/kubernetes/common_shared.key
+      type: ""
+    name: commonsharedkey
