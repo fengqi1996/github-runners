@@ -8,8 +8,7 @@ on:
         description: Environment
         options: 
         - cce-uat
-        - cce-sit
-        - cce-prod
+        - cce-staging
 env:
   HW_ACCESS_KEY: ${{ secrets.HW_ACCESS_KEY }}
   HW_SECRET_KEY: ${{ secrets.HW_SECRET_KEY }}
