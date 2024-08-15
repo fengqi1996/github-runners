@@ -1,4 +1,5 @@
 # Initialize Your CIE installation first before run this pipeline.
+# Need Redeploy your prometheus server to apply the new prometheus rules.
 name: Alertmanager
 
 on:
@@ -42,4 +43,4 @@ jobs:
       run: | 
         kubectl apply -f alertrule.${{ env.ENVIRONMENT }}.secret.yaml -n monitoring
         kubectl apply -f prometheusrules.${{ env.ENVIRONMENT }}.yaml -n monitoring
-        
+        kubectl rollout restart statefulset prometheus-server -n monitoring
