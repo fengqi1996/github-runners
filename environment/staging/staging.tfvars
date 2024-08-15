@@ -1,7 +1,7 @@
-project_ID="627f1c98-5b1b-11ef-9694-0255ac100103"
+project_ID="fee9ce85-80f8-4569-a212-23daae907bb0"
 region="ap-southeast-2"
 environment="staging"
-cluster_id="2edacaea-5923-11ef-9694-0255ac100103"
+cluster_id="627f1c98-5b1b-11ef-9694-0255ac100103"
 addon_name="cie-collector"
 addon_version="3.9.5"
 enable_nodeAffinity=true
