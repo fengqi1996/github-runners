@@ -154,57 +154,57 @@ variable "cluster_id" {
   default = "33e24729-1dc9-11ef-abd5-0255ac100039"
 }
 
-variable "addon_name" {
-  type = string
-  default = "cie-collector"
-}
+# variable "addon_name" {
+#   type = string
+#   default = "cie-collector"
+# }
 
-variable "addon_version" {
-  type = string
-  default = "3.10.1"
-}
+# variable "addon_version" {
+#   type = string
+#   default = "3.10.1"
+# }
 
-data "huaweicloud_cce_addon_template" "cie-collector" {
-  cluster_id = huaweicloud_cce_cluster.huawei-cce.id
-  name       = var.addon_name
-  version    = var.addon_version
-}
+# data "huaweicloud_cce_addon_template" "cie-collector" {
+#   cluster_id = huaweicloud_cce_cluster.huawei-cce.id
+#   name       = var.addon_name
+#   version    = var.addon_version
+# }
 
-resource "huaweicloud_cce_addon" "cie-collector" {
-  cluster_id    = huaweicloud_cce_cluster.huawei-cce.id
-  template_name = var.addon_name
-  # version       = var.addon_version
-  values {
-    basic_json  = jsonencode(jsondecode(data.huaweicloud_cce_addon_template.cie-collector.spec).basic)
-    custom_json = jsonencode(merge(
-      jsondecode(data.huaweicloud_cce_addon_template.cie-collector.spec).parameters.custom,
-      {
-        cluster_id = huaweicloud_cce_cluster.huawei-cce.id
-        tenant_id  = var.project_ID
-        retention  = "1d"
-        enable_nodeAffinity=true
-        shards = 2
-        storage_class="csi-disk-topology"
-        storage_size="20Gi"
-        storage_type="SAS"
-        supportServerModeSharding=true
-        highAvailability=true # Two Replicas data
-        scrapeInterval="20s" # 5 seconds interval, 15s, 20s, 25s, 30s...
-        enable_grafana=true 
-      }
-    ))
-    flavor_json = jsonencode(
-      jsondecode(data.huaweicloud_cce_addon_template.cie-collector.spec).parameters.flavor7,
-    )
-  }
-  depends_on = [ huaweicloud_cce_node_pool.node_pool, huaweicloud_cce_node.cce-node ]
-}
+# resource "huaweicloud_cce_addon" "cie-collector" {
+#   cluster_id    = huaweicloud_cce_cluster.huawei-cce.id
+#   template_name = var.addon_name
+#   # version       = var.addon_version
+#   values {
+#     basic_json  = jsonencode(jsondecode(data.huaweicloud_cce_addon_template.cie-collector.spec).basic)
+#     custom_json = jsonencode(merge(
+#       jsondecode(data.huaweicloud_cce_addon_template.cie-collector.spec).parameters.custom,
+#       {
+#         cluster_id = huaweicloud_cce_cluster.huawei-cce.id
+#         tenant_id  = var.project_ID
+#         retention  = "1d"
+#         enable_nodeAffinity=true
+#         shards = 2
+#         storage_class="csi-disk-topology"
+#         storage_size="20Gi"
+#         storage_type="SAS"
+#         supportServerModeSharding=true
+#         highAvailability=true # Two Replicas data
+#         scrapeInterval="20s" # 5 seconds interval, 15s, 20s, 25s, 30s...
+#         enable_grafana=true 
+#       }
+#     ))
+#     flavor_json = jsonencode(
+#       jsondecode(data.huaweicloud_cce_addon_template.cie-collector.spec).parameters.flavor7,
+#     )
+#   }
+#   depends_on = [ huaweicloud_cce_node_pool.node_pool, huaweicloud_cce_node.cce-node ]
+# }
 
-resource "huaweicloud_cce_addon" "grafana" {
-  cluster_id    = huaweicloud_cce_cluster.huawei-cce.id
-  template_name = "grafana"
-  depends_on = [ huaweicloud_cce_node_pool.node_pool, huaweicloud_cce_node.cce-node ]
-}
+# resource "huaweicloud_cce_addon" "grafana" {
+#   cluster_id    = huaweicloud_cce_cluster.huawei-cce.id
+#   template_name = "grafana"
+#   depends_on = [ huaweicloud_cce_node_pool.node_pool, huaweicloud_cce_node.cce-node ]
+# }
 
 resource "huaweicloud_vpc_eip" "cce-nat-eip" {
   publicip {
