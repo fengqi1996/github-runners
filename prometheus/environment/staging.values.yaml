@@ -1,3 +1,4 @@
+# README: Need to create csi-disk-ssd storage class first. 
 prometheus:
   prometheusSpec:
     resources: # .Values.prometheus.prometheusSpec.resources 
@@ -7,7 +8,8 @@ prometheus:
       requests:
         cpu: 500m
         memory: 2Gi
-    retention: "15d" # .Values.prometheus.prometheusSpec.retention | quote
+    retention: "1h" # .Values.prometheus.prometheusSpec.retention | quote
+    replicas: 1 # .Values.prometheus.prometheusSpec.replicas
     scrapeInterval: "20s" # .Values.prometheus.prometheusSpec.scrapeInterval
     scrapeTimeout: "10s" # .Values.prometheus.prometheusSpec.scrapeTimeout
     shards: 2 # .Values.prometheus.prometheusSpec.shards
@@ -15,7 +17,7 @@ prometheus:
       volumeClaimTemplate:
         metadata:
           annotations:
-            everest.io/disk-volume-type: SAS
+            everest.io/disk-volume-type: SSD
           labels:
             app: prometheus
           name: pvc
@@ -24,8 +26,8 @@ prometheus:
           - ReadWriteOnce
           resources:
             requests:
-              storage: 20Gi
-          storageClassName: csi-disk-topology
+              storage: 30Gi
+          storageClassName: csi-disk-ssd
     thanos:
       resources: # .Values.prometheus.prometheusSpec.thanos.resources
         limits:

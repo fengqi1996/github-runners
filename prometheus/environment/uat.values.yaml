@@ -7,7 +7,8 @@ prometheus:
       requests:
         cpu: 500m
         memory: 2Gi
-    retention: "15d" # .Values.prometheus.prometheusSpec.retention | quote
+    retention: "1d" # .Values.prometheus.prometheusSpec.retention | quote
+    replicas: 2 # .Values.prometheus.prometheusSpec.replicas
     scrapeInterval: "20s" # .Values.prometheus.prometheusSpec.scrapeInterval
     scrapeTimeout: "10s" # .Values.prometheus.prometheusSpec.scrapeTimeout
     shards: 2 # .Values.prometheus.prometheusSpec.shards
