@@ -9,7 +9,7 @@ on:
         options: 
         - uat
         - staging
-    input:
+    inputs:
       namespace:
         type: string
         description: Namespace
