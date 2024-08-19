@@ -14,7 +14,7 @@ on:
 env: 
   ENVIRONMENT: ${{ github.event.inputs.environment }}
   SMTP_PWD: ${{ secrets.SMTP_PWD }}
-  KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_AIS }}
+  KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_AIS_STAGING }}
   CCE_MONITORING_HELM_CHART: 'prometheus-ais'
   CCE_MONITORING_HELM_RELEASE_NAME: 'cce-monitoring'
   CCE_MONITORING_HELM_NAMESPACE: 'monitoring'   
