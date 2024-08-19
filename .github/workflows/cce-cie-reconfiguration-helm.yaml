@@ -41,9 +41,9 @@ jobs:
         mkdir -p $HOME/.kube
         export KUBECONFIG=$HOME/.kube/config
         if [[ "${{ github.event.inputs.environment }}" == "uat" ]]; then
-          echo "${{ secrets.UAT_KUBECONFIG }}" | base64 -d > $HOME/.kube/config
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
         elif [[ "${{ github.event.inputs.environment }}" == "staging" ]]; then
-          echo "${{ secrets.STAGING_KUBECONFIG }}" | base64 -d > $HOME/.kube/config
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
         else
           echo "Invalid environment selection"
           exit 1
