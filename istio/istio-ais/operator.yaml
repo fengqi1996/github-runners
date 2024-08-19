@@ -3,7 +3,7 @@ kind: IstioOperator
 metadata:
   namespace: project-istio-system
 spec:
-  profile: default
+  profile: minimal
   revision: project-istio-system
   meshConfig:
     discoverySelectors:
