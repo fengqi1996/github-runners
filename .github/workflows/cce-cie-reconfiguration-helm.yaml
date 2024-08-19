@@ -58,7 +58,6 @@ jobs:
         cat prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/alertrule.secret.yaml
         cat prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/prometheus.yaml
 
-    - name: Change 
     - name: Apply Configured Yaml File
       working-directory: ${{ github.workspace }}
       run: |
