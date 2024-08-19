@@ -1,0 +1,45 @@
+workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        description: Environment
+        options: 
+        - uat
+        - staging
+
+
+jobs:
+  deploy_istio:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install Helm
+      uses: azure/setup-helm@v3
+
+    - name: Configure kubectl
+      uses: azure/setup-kubectl@v2
+      with:
+        version: 'latest'
+
+    - name: Set up Kubeconfig
+      run: |
+        mkdir -p $HOME/.kube
+        export KUBECONFIG=$HOME/.kube/config
+        if [[ "${{ github.event.inputs.environment }}" == "uat" ]]; then
+          echo "${{ secrets.UAT_KUBECONFIG }}" > $HOME/.kube/config
+        elif [[ "${{ github.event.inputs.environment }}" == "staging" ]]; then
+          echo "${{ secrets.STAGING_KUBECONFIG }}" > $HOME/.kube/config
+        else
+          echo "Invalid environment selection"
+          exit 1
+        fi
+        kubectl version
+
+    - name: Set up Istioctl
+      run: |
+        curl -sL https://istio.io/downloadIstioctl | ISTIO_VERSION=1.23.0 sh -
+        export PATH=$HOME/.istioctl/bin:$PATH
+        istioctl version
