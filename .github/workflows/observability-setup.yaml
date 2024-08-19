@@ -54,6 +54,7 @@ jobs:
 
     - name: Install Istio
       run: |
+        export PATH=$HOME/.istioctl/bin:$PATH 
         istioctl install --set profile=default -y -f istio/istio-ais/operator.yaml
         kubectl create namespace ${{ github.event.inputs.namespace }} || true
         kubectl label namespace ${{ github.event.inputs.namespace }} usergroup=${{ github.event.inputs.namespace }} --overwrite
