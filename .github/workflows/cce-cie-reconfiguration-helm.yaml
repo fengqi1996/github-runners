@@ -40,7 +40,14 @@ jobs:
       run: |
         mkdir -p $HOME/.kube
         export KUBECONFIG=$HOME/.kube/config
-        echo ${{ env.KUBE_CONFIG }} | base64 -d > $KUBECONFIG
+        if [[ "${{ github.event.inputs.environment }}" == "uat" ]]; then
+          echo "${{ secrets.UAT_KUBECONFIG }}" | base64 -d > $HOME/.kube/config
+        elif [[ "${{ github.event.inputs.environment }}" == "staging" ]]; then
+          echo "${{ secrets.STAGING_KUBECONFIG }}" | base64 -d > $HOME/.kube/config
+        else
+          echo "Invalid environment selection"
+          exit 1
+        fi
         kubectl version
 
     - name: Helm Template
@@ -50,3 +57,12 @@ jobs:
         cat prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/prometheus.rules.yaml
         cat prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/alertrule.secret.yaml
         cat prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/prometheus.yaml
+
+    - name: Change 
+    - name: Apply Configured Yaml File
+      working-directory: ${{ github.workspace }}
+      run: |
+        sed -i 's/smtppassword/mypassword/g' prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/alertrule.secret.yaml
+        kubectl apply -f prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/alertrule.secret.yaml
+        kubectl apply -f prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/prometheus.rules.yaml
+        kubectl apply -f prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/prometheus.yaml
