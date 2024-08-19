@@ -11,7 +11,7 @@ on:
         - staging
     inputs:
       namespace:
-        type: string
+        type: choice
         description: Namespace
         options:
         - project-microservice 
