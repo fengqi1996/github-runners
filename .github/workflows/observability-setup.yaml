@@ -9,7 +9,13 @@ on:
         options: 
         - uat
         - staging
-
+    input:
+      namespace:
+        type: string
+        description: Namespace
+        options:
+        - project-microservice 
+        - project-istio-microservice
 
 jobs:
   deploy_istio:
@@ -43,7 +49,7 @@ jobs:
 
     - name: Set up Istioctl
       run: |
-        curl -sL https://istio.io/downloadIstioctl | ISTIO_VERSION=1.23.0 sh -
+        curl -sL https://istio.io/downloadIstioctl | ISTIO_VERSION=1.22.0 sh -
         export PATH=$HOME/.istioctl/bin:$PATH
         istioctl version
 
