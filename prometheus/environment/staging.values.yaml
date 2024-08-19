@@ -3,12 +3,12 @@ prometheus:
   prometheusSpec:
     resources: # .Values.prometheus.prometheusSpec.resources 
       limits:
-        cpu: "2"
+        cpu: "1"
         memory: 8Gi
       requests:
         cpu: 500m
-        memory: 2Gi
-    retention: "1h" # .Values.prometheus.prometheusSpec.retention | quote
+        memory: 0.5Gi
+    retention: "6h" # .Values.prometheus.prometheusSpec.retention | quote
     replicas: 1 # .Values.prometheus.prometheusSpec.replicas
     scrapeInterval: "20s" # .Values.prometheus.prometheusSpec.scrapeInterval
     scrapeTimeout: "10s" # .Values.prometheus.prometheusSpec.scrapeTimeout
@@ -35,7 +35,7 @@ prometheus:
           memory: 4Gi
         requests:
           cpu: 500m
-          memory: 2Gi
+          memory: 0.5Gi
 
 prometheusRule:
   - name: test-rule-ais

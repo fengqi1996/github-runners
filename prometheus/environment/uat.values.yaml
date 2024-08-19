@@ -6,8 +6,8 @@ prometheus:
         memory: 8Gi
       requests:
         cpu: 500m
-        memory: 2Gi
-    retention: "1d" # .Values.prometheus.prometheusSpec.retention | quote
+        memory: 0.5Gi
+    retention: "3h" # .Values.prometheus.prometheusSpec.retention | quote
     replicas: 2 # .Values.prometheus.prometheusSpec.replicas
     scrapeInterval: "20s" # .Values.prometheus.prometheusSpec.scrapeInterval
     scrapeTimeout: "10s" # .Values.prometheus.prometheusSpec.scrapeTimeout
@@ -33,8 +33,8 @@ prometheus:
           cpu: "1"
           memory: 4Gi
         requests:
-          cpu: 500m
-          memory: 2Gi
+          cpu: 100m
+          memory: 0.5Gi
 
 prometheusRule:
   - name: test-rule-ais
