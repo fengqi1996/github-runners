@@ -1,5 +1,5 @@
 # Change secret to AIS.
-name: CIE Reconfiguration
+name: CIE Reconfiguration Helm
 
 on:
   workflow_dispatch:

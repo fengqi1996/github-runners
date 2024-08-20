@@ -1,4 +1,4 @@
-name: Terraform Destroy
+name: CIE Cleanup Terraform
 
 on:
   workflow_dispatch:
