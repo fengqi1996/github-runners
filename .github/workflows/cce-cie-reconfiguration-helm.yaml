@@ -64,3 +64,4 @@ jobs:
         kubectl apply -f prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/alertrule.secret.yaml
         kubectl apply -f prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/prometheus.rules.yaml
         kubectl apply -f prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/prometheus.yaml
+        kubectl rollout restart statefulset prometheus-server -n monitoring
