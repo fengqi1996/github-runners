@@ -60,7 +60,7 @@ jobs:
     - name: Apply Configured Yaml File
       working-directory: ${{ github.workspace }}
       run: |
-        sed -i 's/smtppassword/mypassword/g' prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/alertrule.secret.yaml
+        sed -i 's/smtppassword/${{ env.SMTP_PWD }}/g' prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/alertrule.secret.yaml
         kubectl apply -f prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/alertrule.secret.yaml
         kubectl apply -f prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/prometheus.rules.yaml
         kubectl apply -f prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/prometheus.yaml
