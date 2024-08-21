@@ -13,12 +13,16 @@ on:
         type: choice
         description: Namespace
         options:
-        - project-microservice 
-        - project-istio-microservice
+        - istio-sytem
+env: 
+  ENVIRONMENT: ${{ github.event.inputs.environment }}
+  ISTIO_RELEASE_NAME: istiod
+  ISTIO_RELEASE_NAMESPACE: istio-system
+  ISTIO_CHART_HELM_CHART_NAME: istio/istiod
 
 jobs:
   deploy_istio:
-    runs-on: ubuntu-latest
+    runs-on: debian
 
     steps:
     - name: Checkout code
@@ -31,7 +35,7 @@ jobs:
       uses: Azure/setup-kubectl@v4.0.0
       with:
         version: 'latest'
-
+            
     - name: Set up Kubeconfig
       run: |
         mkdir -p $HOME/.kube
@@ -44,23 +48,40 @@ jobs:
           echo "Invalid environment selection"
           exit 1
         fi
-        kubectl version
+        kubectl version  
 
-    - name: Set up Istioctl
+    - name: Install Istio Base
       run: |
-        curl -sL https://istio.io/downloadIstioctl | ISTIO_VERSION=1.22.0 sh -
-        export PATH=$HOME/.istioctl/bin:$PATH
-        istioctl version
-
-    - name: Install Istio
+        helm install istio-base istio/base -n ${{ env.ISTIO_RELEASE_NAMESPACE }} --set defaultRevision=default --create-namespace
+        
+    - name: Install Istiod
       run: |
-        export PATH=$HOME/.istioctl/bin:$PATH 
-        istioctl install -y -f istio/istio-ais/operator.yaml
-        kubectl create namespace ${{ github.event.inputs.namespace }} || true
-        kubectl label namespace ${{ github.event.inputs.namespace }} usergroup=${{ github.event.inputs.namespace }} --overwrite
-        kubectl get namespace ${{ github.event.inputs.namespace }} -o jsonpath='{.metadata.labels}'
+        helm install istiod istio/istiod -n ${{ env.ISTIO_RELEASE_NAMESPACE }} --values istio/istio-ais/${{ env.ENVIRONMENT }}/istiod.${{ env.ENVIRONMENT }}.yaml
 
+    - name: Install Istio Ingress Gateway
+      run: |
+        helm install istio-ingress istio/gateway -n ${{ env.ISTIO_RELEASE_NAMESPACE }} --values istio/istio-ais/${{ env.ENVIRONMENT }}/ingress.${{ env.ENVIRONMENT }}.yaml
+
+    - name: Label namespace
+      run: |
+        kubectl create namespace project-microservice || true
+        kubectl label namespace project-microservice istio-injection- istio.io/rev=v1 --overwrite
+
+    - name: Install Kiali
+      run: |
+        helm repo add kiali https://kiali.org/helm-charts
+        helm install --namespace istio-system --create-namespace kiali-operator kiali/kiali-operator
+        
+    - name: Install Kiali CR
+      run: |
+        kubectl apply -f istio/istio-ais/${{ env.ENVIRONMENT }}/kiali.${{ env.ENVIRONMENT }}.yaml
     
-
+    - name: Install Jaeger
+      run: |
+        kubectl apply -f istio/istio-ais/${{ env.ENVIRONMENT }}/jaeger.${{ env.ENVIRONMENT }}.yaml
+    
+    - name: Setup Ingress and Virtual Service
+      run: |
+        kubectl apply -f istio/istio-ais/${{ env.ENVIRONMENT }}/ingress-gateway.${{ env.ENVIRONMENT }}.yaml
 
     
