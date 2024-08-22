@@ -61,7 +61,7 @@ jobs:
     
     - name: Uninstall Kiali
       run: |
-        kubectl delete -f istio/istio-ais/${{ env.ENVIRONMENT }}/kiali.${{ env.ENVIRONMENT }}.yaml
+        kubectl delete -f istio/istio-ais/${{ env.ENVIRONMENT }}/kiali.cr.${{ env.ENVIRONMENT }}.yaml
     
     - name: Uninstall Kiali Operator
       run: |
