@@ -83,6 +83,10 @@ jobs:
     
     - name: Setup Ingress and Virtual Service
       run: |
-        kubectl apply -f istio/istio-ais/${{ env.ENVIRONMENT }}/ingress-gateway.${{ env.ENVIRONMENT }}.yaml
+        kubectl apply -n default -f istio/istio-ais/${{ env.ENVIRONMENT }}/ingress-gateway.${{ env.ENVIRONMENT }}.yaml
+
+    - name: Create Sample Application
+      run: |
+        kubectl apply -l version!=v2,version!=v3 -f https://raw.githubusercontent.com/istio/istio/release-1.23/samples/bookinfo/platform/kube/bookinfo.yaml
 
     
