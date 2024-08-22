@@ -1,0 +1,44 @@
+apiVersion: kiali.io/v1alpha1
+kind: Kiali
+metadata:
+  namespace: istio-system
+  name: kiali
+spec:
+  auth:
+    strategy: "anonymous"  # Using login strategy
+  deployment:
+    accessible_namespaces:
+      # - "istio-system"  # Kiali will monitor only the istio-system namespace
+      - "default"  # Kiali will monitor the project-microservice namespace
+      # - "project-microservice" # Kiali will monitor the project-microservice namespace
+    service_type: LoadBalancer  # Use LoadBalancer service type for Kiali
+    service_annotations:  # Add annotations to the Kiali service
+      kubernetes.io/elb.class: union
+      kubernetes.io/elb.autocreate: '{
+          "type":"public",
+          "bandwidth_name":"test-kiali",
+          "bandwidth_size":5,
+          "bandwidth_sharetype":"PER",
+          "eip_type":"5_bgp"
+        }'
+  server:
+    web_root: "/kiali"  # The root path where Kiali will be accessible
+  external_services:
+    istio:
+      url_service_version: "http://istiod-v1.istio-system.svc:15014/version"
+      components:
+        pilot:
+          namespace: istio-system  # Ensure Kiali integrates with istiod in the same namespace
+    prometheus:
+      url: "http://prometheus-operated.monitoring.svc:9090"  # Prometheus URL in the monitoring namespace
+    tracing:
+      enabled: true
+      namespace: istio-system
+      service: tracing
+      url: "http://110.238.117.197/"  # Jaeger URL in the istio-system namespace
+  istio_namespace: "istio-system"  # Specifies the namespace where Istio is installed
+  secrets:
+    create: true  # Kiali operator will create a secret with the credentials
+    admin:
+      username: admin
+      passphrase: admin  # Setting default admin username and password

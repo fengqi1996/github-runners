@@ -75,7 +75,7 @@ jobs:
         
     - name: Install Kiali CR
       run: |
-        kubectl apply -f istio/istio-ais/${{ env.ENVIRONMENT }}/kiali.${{ env.ENVIRONMENT }}.yaml
+        kubectl apply -f istio/istio-ais/${{ env.ENVIRONMENT }}/kiali.cr.${{ env.ENVIRONMENT }}.yaml
     
     - name: Install Jaeger
       run: |

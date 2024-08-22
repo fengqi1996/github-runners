@@ -32,7 +32,10 @@ spec:
     prometheus:
       url: "http://prometheus-operated.monitoring.svc:9090"  # Prometheus URL in the monitoring namespace
     tracing:
-      url: "http://tracing.istio-system.svc:16685"  # Jaeger URL in the istio-system namespace
+      enabled: true
+      namespace: istio-system
+      service: tracing
+      url: "http://110.238.117.197/"  # Jaeger URL in the istio-system namespace
   istio_namespace: "istio-system"  # Specifies the namespace where Istio is installed
   secrets:
     create: true  # Kiali operator will create a secret with the credentials
