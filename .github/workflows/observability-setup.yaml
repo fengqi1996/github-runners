@@ -52,6 +52,7 @@ jobs:
 
     - name: Install Istio Base
       run: |
+        helm repo add istio https://istio-release.storage.googleapis.com/charts
         helm install istio-base istio/base -n ${{ env.ISTIO_RELEASE_NAMESPACE }} --set defaultRevision=default --create-namespace
         
     - name: Install Istiod
@@ -64,8 +65,8 @@ jobs:
 
     - name: Label namespace
       run: |
-        kubectl create namespace project-microservice || true
-        kubectl label namespace project-microservice istio-injection- istio.io/rev=v1 --overwrite
+        kubectl create namespace default || true
+        kubectl label namespace default istio-injection- istio.io/rev=v1 --overwrite
 
     - name: Install Kiali
       run: |
