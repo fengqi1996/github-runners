@@ -53,15 +53,15 @@ jobs:
     - name: Install Istio Base
       run: |
         helm repo add istio https://istio-release.storage.googleapis.com/charts
-        helm install istio-base istio/base -n ${{ env.ISTIO_RELEASE_NAMESPACE }} --set defaultRevision=default --create-namespace
+        helm upgrade --install istio-base istio/base -n ${{ env.ISTIO_RELEASE_NAMESPACE }} --set defaultRevision=default --create-namespace
         
     - name: Install Istiod
       run: |
-        helm install istiod istio/istiod -n ${{ env.ISTIO_RELEASE_NAMESPACE }} --values istio/istio-ais/${{ env.ENVIRONMENT }}/istiod.${{ env.ENVIRONMENT }}.yaml
+        helm upgrade --install istiod istio/istiod -n ${{ env.ISTIO_RELEASE_NAMESPACE }} --values istio/istio-ais/${{ env.ENVIRONMENT }}/istiod.${{ env.ENVIRONMENT }}.yaml
 
     - name: Install Istio Ingress Gateway
       run: |
-        helm install istio-ingress istio/gateway -n ${{ env.ISTIO_RELEASE_NAMESPACE }} --values istio/istio-ais/${{ env.ENVIRONMENT }}/ingress.${{ env.ENVIRONMENT }}.yaml
+        helm upgrade --install istio-ingress istio/gateway -n ${{ env.ISTIO_RELEASE_NAMESPACE }} --values istio/istio-ais/${{ env.ENVIRONMENT }}/ingress.${{ env.ENVIRONMENT }}.yaml
 
     - name: Label namespace
       run: |
@@ -71,7 +71,7 @@ jobs:
     - name: Install Kiali
       run: |
         helm repo add kiali https://kiali.org/helm-charts
-        helm install --namespace istio-system --create-namespace kiali-operator kiali/kiali-operator
+        helm upgrade --install --namespace istio-system --create-namespace kiali-operator kiali/kiali-operator
         
     - name: Install Kiali CR
       run: |
