@@ -1,0 +1,85 @@
+name: Delete Istio
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        description: Environment
+        options: 
+        - uat
+        - staging
+      namespace:
+        type: choice
+        description: Namespace
+        options:
+        - istio-system
+env: 
+  ENVIRONMENT: ${{ github.event.inputs.environment }}
+
+jobs:
+  deploy_istio:
+    runs-on: debian
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Helm
+      uses: azure/setup-helm@v4.2.0
+
+    - name: Configure kubectl
+      uses: Azure/setup-kubectl@v4.0.0
+      with:
+        version: 'latest'
+            
+    - name: Set up Kubeconfig
+      run: |
+        mkdir -p $HOME/.kube
+        export KUBECONFIG=$HOME/.kube/config
+        if [[ "${{ github.event.inputs.environment }}" == "uat" ]]; then
+          echo "${{ secrets.KUBE_CONFIG_AIS_UAT }}" | base64 -d > $KUBECONFIG
+        elif [[ "${{ github.event.inputs.environment }}" == "staging" ]]; then
+          echo "${{ secrets.KUBE_CONFIG_AIS_STAGING }}" | base64 -d> $KUBECONFIG
+        else
+          echo "Invalid environment selection"
+          exit 1
+        fi
+        kubectl version  
+
+    - name: Uninstall Istio Base
+      run: |
+        helm uninstall istio-base -n istio-system
+        
+    - name: Uninstall Istiod
+      run: |
+        helm uninstall istiod -n istio-system
+    
+    - name: Uninstall Ingress Gateway
+      run: |
+        helm uninstall istio-ingress -n istio-system
+    
+    - name: Uninstall Kiali
+      run: |
+        kubectl delete -f istio/istio-ais/${{ env.ENVIRONMENT }}/kiali.${{ env.ENVIRONMENT }}.yaml
+    
+    - name: Uninstall Kiali Operator
+      run: |
+        helm uninstall kiali-operator -n istio-system
+    
+    - name: Uninstall Jaeger
+      run: |
+        kubectl delete -f istio/istio-ais/${{ env.ENVIRONMENT }}/jaeger.${{ env.ENVIRONMENT }}.yaml
+    
+    - name: Delete Ingress Gateway
+      run: |
+        helm uninstall istio-ingress -n istio-system
+
+    - name: Delete Sample Application
+      run: |
+        kubectl delete -f istio/istio-ais/${{ env.ENVIRONMENT }}/sample-app.${{ env.ENVIRONMENT }}.yaml
+
+    
+
+
+    
