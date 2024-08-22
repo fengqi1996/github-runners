@@ -70,6 +70,14 @@ alertmanagerConfig:
         auth_identity: chan1992241@gmail.com
         auth_password: smtppassword
         send_resolved: true
+      - to: chan1992241@proton.me
+        from: chan1992241@gmail.com
+        smarthost: smtp.gmail.com:587
+        auth_username: chan1992241@gmail.com
+        auth_identity: chan1992241@gmail.com
+        auth_password: smtppassword
+        send_resolved: true
+
     - name: 'null'
     - name: FMGateway
       webhook_configs:
