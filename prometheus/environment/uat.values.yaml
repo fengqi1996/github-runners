@@ -70,7 +70,7 @@ alertmanagerConfig:
         auth_identity: chan1992241@gmail.com
         auth_password: smtppassword
         send_resolved: true
-      - to: chan1992241@proton.me
+      - to: eltakung@gmail.com
         from: chan1992241@gmail.com
         smarthost: smtp.gmail.com:587
         auth_username: chan1992241@gmail.com
