@@ -63,7 +63,7 @@ alertmanagerConfig:
   receivers:
     - name: 'gmail-notifications'
       email_configs:
-      - to: 'eltakung@gmail.com'
+      - to: 'chan1992241@gmail.com, eltakung@gmail.com'
         from: chan1992241@gmail.com
         smarthost: smtp.gmail.com:587
         auth_username: chan1992241@gmail.com
