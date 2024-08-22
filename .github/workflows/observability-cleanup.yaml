@@ -49,15 +49,15 @@ jobs:
 
     - name: Uninstall Istio Base
       run: |
-        helm uninstall istio-base -n istio-system
+        helm uninstall istio-base -n istio-system --ignore-not-found
         
     - name: Uninstall Istiod
       run: |
-        helm uninstall istiod -n istio-system
+        helm uninstall istiod -n istio-system --ignore-not-found
     
     - name: Uninstall Ingress Gateway
       run: |
-        helm uninstall istio-ingress -n istio-system
+        helm uninstall istio-ingress -n istio-system --ignore-not-found
     
     - name: Uninstall Kiali
       run: |
@@ -65,7 +65,7 @@ jobs:
     
     - name: Uninstall Kiali Operator
       run: |
-        helm uninstall kiali-operator -n istio-system
+        helm uninstall kiali-operator -n istio-system --ignore-not-found
     
     - name: Uninstall Jaeger
       run: |
@@ -73,7 +73,7 @@ jobs:
     
     - name: Delete Ingress Gateway
       run: |
-        helm uninstall istio-ingress -n istio-system
+        helm uninstall istio-ingress -n istio-system --ignore-not-found
 
     - name: Delete Sample Application
       run: |
