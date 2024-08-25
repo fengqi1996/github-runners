@@ -1,0 +1,33 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: istio-huawei
+  namespace: hw-istio-system
+spec:
+  profile: default
+  revision: huawei
+  meshConfig:
+    discoverySelectors:
+      - matchLabels:
+          usergroup: huawei
+  values:
+    global:
+      istioNamespace: hw-istio-system
+    pilot:
+      env:
+        ENABLE_ENHANCED_RESOURCE_SCOPING: true
+  components:
+    ingressGateways:
+      - name: istio-ingressgateway
+        enabled: true
+        namespace: hw-istio-system
+        k8s:
+          serviceAnnotations:
+            kubernetes.io/elb.class: "union"
+            kubernetes.io/elb.autocreate: '{
+              "type":"public",
+              "bandwidth_name":"test-ingress-huawei",
+              "bandwidth_size":5,
+              "bandwidth_sharetype":"PER",
+              "eip_type":"5_bgp"
+            }'
