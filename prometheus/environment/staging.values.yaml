@@ -93,7 +93,7 @@ alertmanagerConfig:
     resolve_timeout: 1m
 
   route:
-    receiver: 'gmail-notifications'
+    receiver: 'email-and-webhook'
 
   receivers:
     - name: 'gmail-notifications'
@@ -107,6 +107,18 @@ alertmanagerConfig:
         send_resolved: true
     - name: 'null'
     - name: FMGateway
+      webhook_configs:
+        - url: >-
+            http://fastapi-alert-webhook.monitoring.svc.cluster.local:8080/fmgateway?amo_name=sub-AROTest-az-dev&system_name=ocp&ems_name=sub-AROTest-az-dev&ems_ip=10.84.46.132&site_code=sub-AROTest-az-dev&network_type=IT
+    - name: 'email-and-webhook'
+      email_configs:
+        - to: chan1992241@gmail.com
+          from: chan1992241@gmail.com
+          smarthost: smtp.gmail.com:587
+          auth_username: chan1992241@gmail.com
+          auth_identity: chan1992241@gmail.com
+          auth_password: smtppassword
+          send_resolved: true
       webhook_configs:
         - url: >-
             http://fastapi-alert-webhook.monitoring.svc.cluster.local:8080/fmgateway?amo_name=sub-AROTest-az-dev&system_name=ocp&ems_name=sub-AROTest-az-dev&ems_ip=10.84.46.132&site_code=sub-AROTest-az-dev&network_type=IT
