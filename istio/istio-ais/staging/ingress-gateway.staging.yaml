@@ -2,17 +2,17 @@ apiVersion: networking.istio.io/v1
 kind: Gateway
 metadata:
   name: istio-gateway
-  # namespace: istio-system # Not neccessary to be in istio-system namespace
+  namespace: alert # Not neccessary to be in istio-system namespace
 spec:
   selector:
-    istio: ingress # use Istio default gateway implementation
+    istio: ingressgateway # use Istio default gateway implementation 
   servers:
   - port:
       number: 80
       name: http
       protocol: HTTP
     hosts:
-    - "*"
+    - huawei.2.intra.test.io
 ---
 apiVersion: networking.istio.io/v1
 kind: VirtualService
@@ -22,19 +22,13 @@ spec:
   hosts:
   - "*"
   gateways:
-  - default/istio-gateway # Need to specify the namespace for the gateway
+  - alert/istio-gateway # Need to specify the namespace for the gateway
   http:
   - match:
     - uri:
-        exact: /productpage
-    - uri:
-        exact: /login
-    - uri:
-        exact: /logout
-    - uri:
-        prefix: /static
+        exact: /
     route:
     - destination:
-        host: productpage
+        host: httpbin
         port:
-          number: 9080
+          number: 8000
