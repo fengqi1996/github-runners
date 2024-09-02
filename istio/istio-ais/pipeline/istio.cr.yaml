@@ -14,7 +14,7 @@ spec:
     # tracingServiceName:
     defaultConfig:
       tracing:
-        sampling: <jaeger-trace>
+        sampling: <jaeger-trace-rate>
         zipkin:
           address: jaeger-collector.<mesh-name>-istio-system.svc.cluster.local:9411
   values:

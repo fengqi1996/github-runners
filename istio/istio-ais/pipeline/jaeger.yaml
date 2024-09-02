@@ -33,7 +33,7 @@ spec:
             - name: COLLECTOR_ZIPKIN_HOST_PORT
               value: ":9411"
             - name: MEMORY_MAX_TRACES
-              value: "50000"
+              value: "<jaeger-max-traces>"
             - name: QUERY_BASE_PATH
               value: /jaeger
           livenessProbe:
