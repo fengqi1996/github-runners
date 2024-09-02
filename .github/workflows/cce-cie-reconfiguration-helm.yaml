@@ -56,6 +56,7 @@ jobs:
         cat prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/prometheus.rules.yaml
         cat prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/alertrule.secret.yaml
         cat prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/prometheus.yaml
+        cat prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/grafana.yaml
 
     - name: Apply Configured Yaml File
       working-directory: ${{ github.workspace }}
@@ -64,4 +65,5 @@ jobs:
         kubectl apply -f prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/alertrule.secret.yaml
         kubectl apply -f prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/prometheus.rules.yaml
         kubectl apply -f prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/prometheus.yaml
+        kubectl apply -f prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/grafana.yaml
         kubectl rollout restart statefulset prometheus-server -n monitoring
