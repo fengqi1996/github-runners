@@ -1,0 +1,126 @@
+name: CCE Istio Install and Reconfiguration
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        description: Environment
+        options: 
+        - uat
+        - staging
+      meshNamespace:
+        description: 'New namespace to add to the Istio mesh'
+        required: true
+      meshName:
+        description: 'Name of the Istio mesh'
+        required: true
+      jaegerTraceSampling:
+        description: 'Maximum number of traces to store in Jaeger'
+        required: true
+        default: 100.0
+
+env: 
+  ENVIRONMENT: ${{ github.event.inputs.environment }}
+  MESH_NAMESPACE: ${{ github.event.inputs.meshNamespace }}
+  MESH_NAME: ${{ github.event.inputs.meshName }}
+  JAEGER_TRACE_SAMPLING:  ${{ github.event.input.jaegerTraceSampling }}
+
+jobs:
+  deploy_istio:
+    runs-on: debian
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure kubectl
+      uses: Azure/setup-kubectl@v4.0.0
+      with:
+        version: 'latest'
+
+    - name: Install Helm
+      uses: azure/setup-helm@v4.2.0        
+        
+    - name: Set up Kubeconfig
+      run: |
+        mkdir -p $HOME/.kube
+        export KUBECONFIG=$HOME/.kube/config
+        if [[ "${{ github.event.inputs.environment }}" == "uat" ]]; then
+          echo "${{ secrets.KUBE_CONFIG_AIS_UAT }}" | base64 -d > $KUBECONFIG
+        elif [[ "${{ github.event.inputs.environment }}" == "staging" ]]; then
+          echo "${{ secrets.KUBE_CONFIG_AIS_STAGING }}" | base64 -d> $KUBECONFIG
+        else
+          echo "Invalid environment selection"
+          exit 1
+        fi
+        kubectl version  
+    - name: Replace Placeholder
+      run: |
+        # Replace <mesh-name> placeholder
+        istio/istio-ais/pipeline/istio.cr.${{ env.ENVIRONMENT }}.yaml
+        sed -i "s/<mesh-name>/${{ github.event.inputs.mesh_name }}/g" istio/istio-ais/pipeline/kiali.cr.yaml
+        sed -i "s/<mesh-name>/${{ github.event.inputs.mesh_name }}/g" istio/istio-ais/pipeline/istio.cr.yaml
+        sed -i "s/<mesh-name>/${{ github.event.inputs.mesh_name }}/g" istio/istio-ais/pipeline/jaeger.yaml
+        sed -i "s/<mesh-name>/${{ github.event.inputs.mesh_name }}/g" istio/istio-ais/pipeline/peer-authentication.yaml
+        
+        # Replace Tracing Rate for Jaeger
+        sed -i "s/<jaeger-trace>/${{ env.JAEGER_TRACE_SAMPLING }}/g" istio/istio-ais/pipeline/istio.cr.yaml
+
+        # Replace <mesh-namespace> placeholder
+        namespaces=$(echo namespace1,namespace2 | sed 's/,/\\n      - /g')
+        sed -i "s|<mesh-namespace>|- ${namespaces}|g" istio/istio-ais/pipeline/kiali.cr.staging.yaml
+        cat istio/istio-ais/pipeline/kiali.cr.staging.yaml
+        cat istio/istio-ais/pipeline/istio.cr.staging.yaml
+        cat istio/istio-ais/pipeline/jaeger.staging.yaml
+        cat istio/istio-ais/pipeline/peer-authentication.staging.yaml
+        
+    - name: Create and Label Namespace
+      run: |
+        IFS=',' read -ra NAMESPACES <<< "${{ env.MESH_NAMESPACE }}"
+        for namespace  in "${NAMESPACES[@]}"; do
+          kubectl create namespace $namespace  || true
+          kubectl label namespace $namespace usergroup=${{ github.event.inputs.mesh_name }} --overwrite=true
+          kubectl label namespace $namespace istio.io/rev=${{ github.event.inputs.mesh_name }} --overwrite=true
+        done
+
+    - name: Install Istio Operator
+      run: |
+        helm upgrade --install istio-operator istio-operator -n istio-operator --create-namespace
+
+    - name: Refine Watch Namespace For Istio Operator
+      run: |
+        current_namespaces=$(helm get values istio-operator -n istio-operator --output json | jq -r '.watchedNamespaces')
+        echo "Current namespaces: $current_namespaces"
+        new_namespaces="$current_namespaces,${{ env.MESH_NAME }}-istio-system"
+        echo "New namespaces: $new_namespaces"
+        # Remove Duplicate Namespaces
+        updated_namespaces=$(echo $new_namespaces | tr ',' '\n' | sort | uniq | paste -sd, -)
+        echo "Updated namespaces: $updated_namespaces"
+        # Pass updated_namespaces to helm upgrade command step
+        echo "::set-output name=updated_namespaces::$updated_namespaces"
+    
+    - name: Upgrade Helm release with new watchedNamespaces
+      run: |
+        echo "Updated Namespaces: ${{ steps.update_namespaces.outputs.updated_namespaces }}"
+        helm upgrade --install istio-operator istio-operator -n istio-operator --create-namespace \
+          --set watchedNamespaces="${{ steps.update_namespaces.outputs.updated_namespaces }}"
+        current_namespaces=$(helm get values istio-operator -n istio-operator --output json | jq -r '.watchedNamespaces')
+        echo "Current namespaces: $current_namespaces"
+
+    - name: Install Istiod
+      run: |
+        kubectl apply -f istio/istio-ais/pipeline/istio.cr.${{ env.ENVIRONMENT }}.yaml
+
+    - name: Install Kiali
+      run: |
+        helm repo add kiali https://kiali.org/helm-charts
+        helm upgrade --install --namespace ${{ env.MESH_NAME }}-istio-system --create-namespace kiali-operator kiali/kiali-operator
+        
+    - name: Install Kiali CR
+      run: |
+        kubectl apply -f istio/istio-ais/pipline/kiali.cr.${{ env.ENVIRONMENT }}.yaml
+    
+    - name: Install Jaeger
+      run: |
+        kubectl apply -f istio/istio-ais/pipeline/jaeger.${{ env.ENVIRONMENT }}.yaml
