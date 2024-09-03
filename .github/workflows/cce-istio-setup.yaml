@@ -119,6 +119,7 @@ jobs:
     - name: Install Istiod
       run: |
         cat istio/istio-ais/pipeline/istio.cr.yaml
+        kubectl create namespace ${{ env.MESH_NAME }}-istio-system || true
         kubectl apply -f istio/istio-ais/pipeline/istio.cr.yaml
 
     # - name: Install Kiali
