@@ -63,7 +63,7 @@ jobs:
     - name: Replace Placeholder
       run: |
         # Replace <mesh-name> placeholder
-        istio/istio-ais/pipeline/istio.cr.${{ env.ENVIRONMENT }}.yaml
+        # istio/istio-ais/pipeline/istio.cr.${{ env.ENVIRONMENT }}.yaml
         sed -i "s/<mesh-name>/${{ github.event.inputs.mesh_name }}/g" istio/istio-ais/pipeline/kiali.cr.yaml
         sed -i "s/<mesh-name>/${{ github.event.inputs.mesh_name }}/g" istio/istio-ais/pipeline/istio.cr.yaml
         sed -i "s/<mesh-name>/${{ github.event.inputs.mesh_name }}/g" istio/istio-ais/pipeline/jaeger.yaml
