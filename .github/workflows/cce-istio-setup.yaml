@@ -77,7 +77,7 @@ jobs:
         # Replace <mesh-namespace> placeholder
         namespaces=$(echo namespace1,namespace2 | sed 's/,/\\n      - /g')
         sed -i "s|<mesh-namespace>|- ${namespaces}|g" istio/istio-ais/pipeline/kiali.cr.yaml
-        
+
         cat istio/istio-ais/pipeline/kiali.cr.yaml
         cat istio/istio-ais/pipeline/istio.cr.yaml
         cat istio/istio-ais/pipeline/jaeger.yaml
@@ -118,7 +118,7 @@ jobs:
 
     - name: Install Istiod
       run: |
-        kubectl apply -f istio/istio-ais/pipeline/istio.cr.${{ env.ENVIRONMENT }}.yaml
+        kubectl apply -f istio/istio-ais/pipeline/istio.cr.yaml
 
     # - name: Install Kiali
     #   run: |
