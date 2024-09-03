@@ -63,10 +63,10 @@ jobs:
     - name: Replace Placeholder
       run: |
         # Replace <mesh-name> placeholder
-        sed -i "s/<mesh-name>/${{ github.event.inputs.mesh_name }}/g" istio/istio-ais/pipeline/kiali.cr.yaml
-        sed -i "s/<mesh-name>/${{ github.event.inputs.mesh_name }}/g" istio/istio-ais/pipeline/istio.cr.yaml
-        sed -i "s/<mesh-name>/${{ github.event.inputs.mesh_name }}/g" istio/istio-ais/pipeline/jaeger.yaml
-        sed -i "s/<mesh-name>/${{ github.event.inputs.mesh_name }}/g" istio/istio-ais/pipeline/peerauthentication.yaml
+        sed -i "s/<mesh-name>/${{ env.MESH_NAME }}/g" istio/istio-ais/pipeline/kiali.cr.yaml
+        sed -i "s/<mesh-name>/${{ env.MESH_NAME }}/g" istio/istio-ais/pipeline/istio.cr.yaml
+        sed -i "s/<mesh-name>/${{ env.MESH_NAME }}/g" istio/istio-ais/pipeline/jaeger.yaml
+        sed -i "s/<mesh-name>/${{ env.MESH_NAME }}/g" istio/istio-ais/pipeline/peerauthentication.yaml
         
         # Replace Tracing Rate for Jaeger
         sed -i "s/<jaeger-trace-rate>/${{ env.JAEGER_TRACE_SAMPLING }}/g" istio/istio-ais/pipeline/istio.cr.yaml
@@ -88,8 +88,8 @@ jobs:
         IFS=',' read -ra NAMESPACES <<< "${{ env.MESH_NAMESPACE }}"
         for namespace  in "${NAMESPACES[@]}"; do
           kubectl create namespace $namespace  || true
-          kubectl label namespace $namespace usergroup=${{ github.event.inputs.mesh_name }} --overwrite=true
-          kubectl label namespace $namespace istio.io/rev=${{ github.event.inputs.mesh_name }} --overwrite=true
+          kubectl label namespace $namespace usergroup=${{ env.MESH_NAME }} --overwrite=true
+          kubectl label namespace $namespace istio.io/rev=${{ env.MESH_NAME }} --overwrite=true
         done
 
     - name: Install Istio Operator
@@ -118,6 +118,7 @@ jobs:
 
     - name: Install Istiod
       run: |
+        cat istio/istio-ais/pipeline/istio.cr.yaml
         kubectl apply -f istio/istio-ais/pipeline/istio.cr.yaml
 
     # - name: Install Kiali
@@ -126,8 +127,10 @@ jobs:
         
     - name: Install Kiali CR
       run: |
+        cat istio/istio-ais/pipeline/kiali.cr.yaml
         kubectl apply -f istio/istio-ais/pipeline/kiali.cr.yaml
     
     - name: Install Jaeger
       run: |
+        cat 
         kubectl apply -f istio/istio-ais/pipeline/jaeger.yaml
