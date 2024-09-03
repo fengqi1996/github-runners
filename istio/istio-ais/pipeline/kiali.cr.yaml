@@ -8,7 +8,7 @@ spec:
     strategy: "token"  # Using login strategy
   deployment:
     accessible_namespaces:
-      - "<mesh-name>-istio-system"  # Kiali will monitor only the istio-system namespace
+      - <mesh-name>-istio-system  # Kiali will monitor only the istio-system namespace
       <mesh-namespace>
     service_type: LoadBalancer  # Use LoadBalancer service type for Kiali
     service_annotations:  # Add annotations to the Kiali service
@@ -28,7 +28,7 @@ spec:
       auth:
         type: none
     istio:
-      url_service_version: "http://istiod-huawei.istio-system.svc:15014/version"
+      url_service_version: "http://istiod-<mesh-name>.istio-system.svc:15014/version"
       components:
         pilot:
           namespace: <mesh-name>-istio-system  # Ensure Kiali integrates with istiod in the same namespace
