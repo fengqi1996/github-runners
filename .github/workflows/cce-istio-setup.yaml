@@ -63,7 +63,6 @@ jobs:
     - name: Replace Placeholder
       run: |
         # Replace <mesh-name> placeholder
-        # istio/istio-ais/pipeline/istio.cr.${{ env.ENVIRONMENT }}.yaml
         sed -i "s/<mesh-name>/${{ github.event.inputs.mesh_name }}/g" istio/istio-ais/pipeline/kiali.cr.yaml
         sed -i "s/<mesh-name>/${{ github.event.inputs.mesh_name }}/g" istio/istio-ais/pipeline/istio.cr.yaml
         sed -i "s/<mesh-name>/${{ github.event.inputs.mesh_name }}/g" istio/istio-ais/pipeline/jaeger.yaml
@@ -77,11 +76,12 @@ jobs:
 
         # Replace <mesh-namespace> placeholder
         namespaces=$(echo namespace1,namespace2 | sed 's/,/\\n      - /g')
-        sed -i "s|<mesh-namespace>|- ${namespaces}|g" istio/istio-ais/pipeline/kiali.cr.staging.yaml
-        cat istio/istio-ais/pipeline/kiali.cr.staging.yaml
-        cat istio/istio-ais/pipeline/istio.cr.staging.yaml
-        cat istio/istio-ais/pipeline/jaeger.staging.yaml
-        cat istio/istio-ais/pipeline/peerauthentication.staging.yaml
+        sed -i "s|<mesh-namespace>|- ${namespaces}|g" istio/istio-ais/pipeline/kiali.cr.yaml
+        
+        cat istio/istio-ais/pipeline/kiali.cr.yaml
+        cat istio/istio-ais/pipeline/istio.cr.yaml
+        cat istio/istio-ais/pipeline/jaeger.yaml
+        cat istio/istio-ais/pipeline/peerauthentication.yaml
         
     - name: Create and Label Namespace
       run: |
