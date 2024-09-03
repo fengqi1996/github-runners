@@ -67,7 +67,7 @@ jobs:
         sed -i "s/<mesh-name>/${{ github.event.inputs.mesh_name }}/g" istio/istio-ais/pipeline/kiali.cr.yaml
         sed -i "s/<mesh-name>/${{ github.event.inputs.mesh_name }}/g" istio/istio-ais/pipeline/istio.cr.yaml
         sed -i "s/<mesh-name>/${{ github.event.inputs.mesh_name }}/g" istio/istio-ais/pipeline/jaeger.yaml
-        sed -i "s/<mesh-name>/${{ github.event.inputs.mesh_name }}/g" istio/istio-ais/pipeline/peer-authentication.yaml
+        sed -i "s/<mesh-name>/${{ github.event.inputs.mesh_name }}/g" istio/istio-ais/pipeline/peerauthentication.yaml
         
         # Replace Tracing Rate for Jaeger
         sed -i "s/<jaeger-trace-rate>/${{ env.JAEGER_TRACE_SAMPLING }}/g" istio/istio-ais/pipeline/istio.cr.yaml
@@ -81,7 +81,7 @@ jobs:
         cat istio/istio-ais/pipeline/kiali.cr.staging.yaml
         cat istio/istio-ais/pipeline/istio.cr.staging.yaml
         cat istio/istio-ais/pipeline/jaeger.staging.yaml
-        cat istio/istio-ais/pipeline/peer-authentication.staging.yaml
+        cat istio/istio-ais/pipeline/peerauthentication.staging.yaml
         
     - name: Create and Label Namespace
       run: |
