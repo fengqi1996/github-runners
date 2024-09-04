@@ -126,7 +126,7 @@ jobs:
       run: |
         helm repo add kiali https://kiali.org/helm-charts
         helm repo update
-        helm install \
+        helm upgrade --install \
           --namespace kiali-operator \
           --create-namespace \
           istio-operator \
