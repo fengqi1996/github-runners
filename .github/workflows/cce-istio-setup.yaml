@@ -28,8 +28,8 @@ env:
   ENVIRONMENT: ${{ github.event.inputs.environment }}
   MESH_NAMESPACE: ${{ github.event.inputs.meshNamespace }}
   MESH_NAME: ${{ github.event.inputs.meshName }}
-  JAEGER_TRACE_SAMPLING:  ${{ github.event.input.jaegerTraceSampling }}
-  JAEGER_MAX_TRACES: ${{ github.event.input.jaegerMaxTraces }}
+  JAEGER_TRACE_SAMPLING:  ${{ github.event.inputs.jaegerTraceSampling }}
+  JAEGER_MAX_TRACES: ${{ github.event.inputs.jaegerMaxTraces }}
 
 jobs:
   deploy_istio:
