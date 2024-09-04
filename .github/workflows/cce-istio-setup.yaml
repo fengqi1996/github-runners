@@ -122,9 +122,16 @@ jobs:
         kubectl create namespace ${{ env.MESH_NAME }}-istio-system || true
         kubectl apply -f istio/istio-ais/pipeline/istio.cr.yaml
 
-    # - name: Install Kiali
-    #   run: |
-    #     helm upgrade --install --namespace istio-operator --create-namespace kiali-operator kiali-operator
+    - name: Install Kiali
+      run: |
+        helm repo add kiali https://kiali.org/helm-charts
+        helm repo update
+        helm install \
+          --namespace kiali-operator \
+          --create-namespace \
+          istio-operator \
+          kiali/kiali-operator
+        # helm upgrade --install --namespace istio-operator --create-namespace kiali-operator kiali-operator
         
     - name: Install Kiali CR
       run: |
