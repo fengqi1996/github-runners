@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: github-runner
+  name: github-runner-ais
   labels:
-    app: github-runner
+    app: github-runner-ais
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: github-runner
+      app: github-runner-ais
   template:
     metadata:
       labels:
-        app: github-runner
+        app: github-runner-ais
     spec:
       containers:
-      - name: github-runner
+      - name: github-runner-ais
         imagePullPolicy: Always #use local kind image
         image: swr.ap-southeast-3.myhuaweicloud.com/test-fq/github-runner:label
         env:
