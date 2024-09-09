@@ -22,17 +22,17 @@ spec:
         - name: GITHUB_OWNER
           valueFrom:
             secretKeyRef:
-              name: github-secret-huawei 
+              name: github-secret-huawei-ais
               key: GITHUB_OWNER
         - name: GITHUB_REPOSITORY
           valueFrom:
             secretKeyRef:
-              name: github-secret-huawei 
+              name: github-secret-huawei-ais
               key: GITHUB_REPOSITORY
         - name: GITHUB_PERSONAL_TOKEN 
           valueFrom:
             secretKeyRef:
-              name: github-secret-huawei 
+              name: github-secret-huawei-ais
               key: GITHUB_PERSONAL_TOKEN
         - name: DOCKER_HOST
           value: tcp://localhost:2375
