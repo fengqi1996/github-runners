@@ -14,8 +14,8 @@ metadata:
     app: prometheus-server
     app.kubernetes.io/managed-by: Helm
     release: cceaddon-cie-collector
-  name: server
-  namespace: monitoring
+  name: server-2
+  namespace: default
   # resourceVersion: "434199"
   # uid: c82c4087-7de1-485d-946e-898cc51702f2
 spec:
@@ -33,7 +33,7 @@ spec:
     alertmanagers:
     - apiVersion: v2
       name: alertmanager
-      namespace: monitoring
+      namespace: default
       pathPrefix: /
       port: http-web
   containers:
