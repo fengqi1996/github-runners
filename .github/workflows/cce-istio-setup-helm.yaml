@@ -66,13 +66,18 @@ jobs:
         kubectl label namespace ${{ env.istioNamespace }} usergroup=${{ env.PROJECT }} --overwrite=true
         kubectl label namespace ${{ env.istioNamespace }} istio.io/rev=${{ env.PROJECT }} --overwrite=true
 
-        # Create and label mesh namespaces
+        # Create mesh namespaces
         IFS=',' read -ra NAMESPACES <<< "${{ env.MESH_NAMESPACE }}"
         for namespace  in "${NAMESPACES[@]}"; do
           kubectl create namespace $namespace  || true
-          kubectl label namespace $namespace usergroup=${{ env.MESH_NAME }} --overwrite=true
-          kubectl label namespace $namespace istio.io/rev=${{ env.MESH_NAME }} --overwrite=true
         done  
+
+        # Label mesh namespaces
+        for namespace  in "${NAMESPACES[@]}"; do
+          kubectl label namespace $namespace usergroup=${{ env.PROJECT }} --overwrite=true
+          kubectl label namespace $namespace istio.io/rev=${{ env.PROJECT }} --overwrite=true
+        done
+        
     - name: Check Namespaces Label
       run: |
         kubectl get namespace -L usergroup,istio.io/rev      
