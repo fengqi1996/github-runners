@@ -103,7 +103,7 @@ jobs:
 
     - name: Helm Template
       run: |
-        helm template istio/istio-helm-ais/ --values istio/istio-helm-values/{{ env.PROJECT }}.values.yaml --output-dir istio/istio-helm-ais/output
+        helm template istio/istio-helm-ais/ --values istio/istio-helm-values/${{ env.PROJECT }}.values.yaml --output-dir istio/istio-helm-ais/output
 
     - name: Install Istiod
       run: |
