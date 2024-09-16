@@ -1,0 +1,35 @@
+apiVersion: kiali.io/v1alpha1
+kind: Kiali
+metadata:
+  namespace: {{ .Values.namespace }}
+  name: {{ .Values.meshName }}-kiali
+spec:
+  auth:
+    strategy: "token"  # Using login strategy
+  deployment:
+    accessible_namespaces:
+      - {{ .Values.namespace }}  # Kiali will monitor only the istio-system namespace
+      {{- toYaml .Values.meshNamespaces | nindent 6 }}
+    service_type: clusterIP  # Use LoadBalancer service type for Kiali
+  server:
+    web_root: "/kiali"  # The root path where Kiali will be accessible
+  external_services:
+    grafana:
+      url: "http://grafana-oss.monitoring.svc.cluster.local:3000"
+      auth:
+        type: none
+    istio:
+      url_service_version: "http://istiod-{{ .Values.meshName }}.istio-system.svc:15014/version"
+      components:
+        pilot:
+          namespace: {{ .Values.namespace }}  # Ensure Kiali integrates with istiod in the same namespace
+    prometheus:
+      url: "http://prometheus-operated.monitoring.svc:9090"  # Prometheus URL in the monitoring namespace
+    tracing:
+      enabled: true
+      namespace: {{ .Values.namespace }}
+      url: "http://tracing.{{ .Values.namespace }}.svc.cluster.local:80"
+      service: tracing
+      auth:
+        type: none
+  istio_namespace: "{{ .Values.namespace }}"  # Specifies the namespace where Istio is installed

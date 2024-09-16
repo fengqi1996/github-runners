@@ -1,0 +1,25 @@
+meshName: myais
+namespace: myais-istio-system
+jaegerTraceRate: 90.0
+istioIngressservice:
+  ports:
+    - name: http2
+      port: 80
+      targetPort: 8080
+    - name: https
+      port: 443
+      targetPort: 8443
+istioIngressserviceAnnotations:
+  kubernetes.io/elb.class: "union"
+  kubernetes.io/elb.autocreate: '{
+    "type":"public",
+    "bandwidth_name":"test-ingress-huawei",
+    "bandwidth_size":5,
+    "bandwidth_sharetype":"PER",
+    "eip_type":"5_bgp"
+  }'
+meshNamespaces:
+  - myais-istio-system
+  - myais-microservice-1
+jaegerMemoryMaxTraces: 10000
+jaegerSamplingRate: 80.0

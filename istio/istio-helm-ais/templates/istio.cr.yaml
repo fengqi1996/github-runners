@@ -1,0 +1,34 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: {{ .Values.meshName }}
+  namespace: {{ .Values.namespace }}
+spec:
+  profile: default
+  revision: {{ .Values.meshName }}
+  meshConfig:
+    discoverySelectors:
+      - matchLabels:
+          usergroup: {{ .Values.meshName }}
+    enableTracing: true
+    defaultConfig:
+      tracing:
+        sampling: {{ .Values.jaegerSamplingRate }}
+        zipkin:
+          address: jaeger-collector.{{ .Values.namespace }}.svc.cluster.local:9411
+  values:
+    global:
+      istioNamespace: {{ .Values.namespace }}
+    pilot:
+      env:
+        ENABLE_ENHANCED_RESOURCE_SCOPING: true
+  components:
+    ingressGateways:
+      - name: istio-ingressgateway
+        enabled: true
+        namespace: {{ .Values.namespace }}
+        k8s:
+          service:
+            {{- toYaml .Values.istioIngressservice | nindent 12 }}
+          serviceAnnotations:
+            {{- toYaml .Values.istioIngressserviceAnnotations | nindent 12 }}

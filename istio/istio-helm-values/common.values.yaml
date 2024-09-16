@@ -1,0 +1,23 @@
+meshName: common
+namespace: istio-system
+istioIngressservice:
+  ports:
+    - name: http2
+      port: 80
+      targetPort: 80
+    - name: https
+      port: 443
+      targetPort: 443
+istioIngressserviceAnnotations:
+  kubernetes.io/elb.class: "union"
+  kubernetes.io/elb.autocreate: '{
+    "type":"public",
+    "bandwidth_name":"test-ingress-huawei",
+    "bandwidth_size":5,
+    "bandwidth_sharetype":"PER",
+    "eip_type":"5_bgp"
+  }'
+meshNamespaces:
+  - alert
+jaegerMemoryMaxTraces: 10000
+jaegerSamplingRate: 80.0
