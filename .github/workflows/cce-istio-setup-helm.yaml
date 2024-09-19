@@ -10,7 +10,7 @@ on:
         - uat
         - staging
       project:
-        type: string
+        type: choice
         options:
         - myais
         - hw
@@ -64,7 +64,7 @@ jobs:
         # Create and label istio-system namespace
         kubectl create namespace ${{ env.istioNamespace }} || true
         kubectl label namespace ${{ env.istioNamespace }} usergroup=${{ env.PROJECT }} --overwrite=true
-        kubectl label namespace ${{ env.istioNamespace }} istio.io/rev=${{ env.PROJECT }} --overwrite=true
+        # kubectl label namespace ${{ env.istioNamespace }} istio.io/rev=${{ env.PROJECT }} --overwrite=true
 
         # Create mesh namespaces
         IFS=',' read -ra NAMESPACES <<< "${{ env.MESH_NAMESPACE }}"
@@ -117,14 +117,22 @@ jobs:
 
     - name: Install Kiali Operator
       run: |
-        helm repo add kiali https://kiali.org/helm-charts
-        helm repo update
+        # helm repo add kiali https://kiali.org/helm-charts
+        # helm repo update
         helm upgrade --install \
-          --namespace kiali-operator \
+          --namespace istio-operator \
           --create-namespace \
-          istio-operator \
-          kiali/kiali-operator
+          --version v1.89.0 \
+          kiali-operator \
+          kiali-operator
         # helm upgrade --install --namespace istio-operator --create-namespace kiali-operator kiali-operator
+    
+    - name: Provide Role and rolebidinding for Kiali Service Account
+      run: | 
+        cat istio/istio-helm-ais/output/istio-helm-ais/templates/role.yaml 
+        cat istio/istio-helm-ais/output/istio-helm-ais/templates/rolebinding.yaml 
+        kubectl apply -f istio/istio-helm-ais/output/istio-helm-ais/templates/role.yaml 
+        kubectl apply -f istio/istio-helm-ais/output/istio-helm-ais/templates/rolebinding.yaml 
         
     - name: Install Kiali CR
       run: |

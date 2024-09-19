@@ -1,0 +1,16 @@
+{{- range $namespace := .Values.meshNamespaces }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kiali-viewer-binding
+  namespace: {{ $namespace }}
+subjects:
+  - kind: ServiceAccount
+    name: kiali-service-account
+    namespace: {{ $.Values.namespace }}  # The namespace where the service account exists
+roleRef:
+  kind: Role
+  name: kiali-viewer
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}

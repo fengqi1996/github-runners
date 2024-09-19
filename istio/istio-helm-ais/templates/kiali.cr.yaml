@@ -19,7 +19,8 @@ spec:
       auth:
         type: none
     istio:
-      url_service_version: "http://istiod-{{ .Values.meshName }}.istio-system.svc:15014/version"
+      url_service_version: "http://istiod-{{ .Values.meshName }}.{{ .Values.namespace }}.svc:15014/version"
+      istio_sidecar_injector_config_map_name: istio-sidecar-injector-{{ .Values.meshName }} # If the mesh name is common, then the configmap name should be istio-sidecar-injector
       components:
         pilot:
           namespace: {{ .Values.namespace }}  # Ensure Kiali integrates with istiod in the same namespace
