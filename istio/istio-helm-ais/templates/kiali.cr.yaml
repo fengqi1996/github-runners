@@ -10,7 +10,7 @@ spec:
     accessible_namespaces:
       - {{ .Values.namespace }}  # Kiali will monitor only the istio-system namespace
       {{- toYaml .Values.meshNamespaces | nindent 6 }}
-    service_type: clusterIP  # Use LoadBalancer service type for Kiali
+    service_type: ClusterIP  # Use LoadBalancer service type for Kiali
   server:
     web_root: "/kiali"  # The root path where Kiali will be accessible
   external_services:
