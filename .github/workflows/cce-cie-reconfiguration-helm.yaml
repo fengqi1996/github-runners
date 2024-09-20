@@ -57,6 +57,13 @@ jobs:
         cat prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/alertrule.secret.yaml
         cat prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/prometheus.yaml
         cat prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/grafana-service.yaml
+        cat prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/storage-class.yaml
+    
+    - name: Create Storage Class
+      working-directory: ${{ github.workspace }}
+      run: |
+        cat prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/storage-class.yaml
+        kubectl apply -f prometheus/$CCE_MONITORING_HELM_CHART/output/$CCE_MONITORING_HELM_CHART/templates/storage-class.yaml
 
     - name: Apply Configured Yaml File
       working-directory: ${{ github.workspace }}

@@ -5,17 +5,8 @@ metadata:
   namespace: monitoring
   labels:
     app: grafana
-  annotations:
-    kubernetes.io/elb.class: union
-    kubernetes.io/elb.autocreate: '{
-        "type":"public",
-        "bandwidth_name":"test-grafana",
-        "bandwidth_size":5,
-        "bandwidth_sharetype":"PER",
-        "eip_type":"5_bgp"
-      }'
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   externalTrafficPolicy: Cluster
   ports:
     - name: grafana-service
