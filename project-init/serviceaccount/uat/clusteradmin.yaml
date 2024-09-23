@@ -22,5 +22,6 @@ kind: Secret
 type: kubernetes.io/service-account-token
 metadata:
   name: cluster-admin-sa-token
+  namespace: kube-system
   annotations:
     kubernetes.io/service-account.name: cluster-admin-sa
