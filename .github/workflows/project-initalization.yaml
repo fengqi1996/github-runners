@@ -1,0 +1,56 @@
+# Change secret to AIS.
+name: Project Initialization
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        description: Environment
+        options: 
+        - uat
+        - staging
+
+env: 
+  ENVIRONMENT: ${{ github.event.inputs.environment }}
+
+jobs:
+  create-cluster-admin-sa-token:
+    name: Create Cluster Admin Service Account Token
+    runs-on: debian
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Kubectl
+      uses: Azure/setup-kubectl@v4.0.0
+      with:
+        version: 'latest'
+    
+    - name: Set up Kubeconfig
+      run: |
+        mkdir -p $HOME/.kube
+        export KUBECONFIG=$HOME/.kube/config
+        if [[ "${{ github.event.inputs.environment }}" == "uat" ]]; then
+          echo "${{ secrets.KUBE_CONFIG_AIS_UAT }}" | base64 -d > $KUBECONFIG
+        elif [[ "${{ github.event.inputs.environment }}" == "staging" ]]; then
+          echo "${{ secrets.KUBE_CONFIG_AIS_STAGING }}" | base64 -d > $KUBECONFIG
+        else
+          echo "Invalid environment selection"
+          exit 1
+        fi
+        kubectl version
+
+    - name: Create Cluster Admin Service Account 
+      run: |
+        kubectl apply -f project-init/serviceaccount/${{ env.ENVIRONMENT }}/clusteradmin.yaml
+
+    - name: Get Cluster Admin Service Account Token
+      run: |
+        kubectl get secret cluster-admin-sa-token -n kube-system -o json | jq -r '.data.token' | base64 --decode
+
+    - name: Get CA Certificate
+      run: |
+        kubectl get secret cluster-admin-sa-token -n kube-system -o json | jq -r '.data["ca.crt"]' | base64 --decode
+
+    
