@@ -27,12 +27,14 @@ env:
   PROJECT: ${{ github.event.inputs.project }}
   MESH_NAMESPACE: ${{ github.event.inputs.meshNamespace }}
   istioNamespace: ${{ github.event.inputs.istioNamespace }}
-  
+  KUBE_API_SERVER: ${{ secrets.KUBE_API_SERVER }}
+  KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}
+  KUBE_CA_CERT: ${{ secrets.KUBE_CA_CERT }}
 
 jobs:
   deploy_istio:
     runs-on: debian
-
+    environment: ${{ github.event.inputs.environment }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -48,15 +50,20 @@ jobs:
     - name: Set up Kubeconfig
       run: |
         mkdir -p $HOME/.kube
-        export KUBECONFIG=$HOME/.kube/config
-        if [[ "${{ github.event.inputs.environment }}" == "uat" ]]; then
-          echo "${{ secrets.KUBE_CONFIG_AIS_UAT }}" | base64 -d > $KUBECONFIG
-        elif [[ "${{ github.event.inputs.environment }}" == "staging" ]]; then
-          echo "${{ secrets.KUBE_CONFIG_AIS_STAGING }}" | base64 -d> $KUBECONFIG
-        else
-          echo "Invalid environment selection"
-          exit 1
-        fi
+        # export KUBECONFIG=$HOME/.kube/config
+        # if [[ "${{ github.event.inputs.environment }}" == "uat" ]]; then
+        #   echo "${{ secrets.KUBE_CONFIG_AIS_UAT }}" | base64 -d > $KUBECONFIG
+        # elif [[ "${{ github.event.inputs.environment }}" == "staging" ]]; then
+        #   echo "${{ secrets.KUBE_CONFIG_AIS_STAGING }}" | base64 -d> $KUBECONFIG
+        # else
+        #   echo "Invalid environment selection"
+        #   exit 1
+        # fi
+        echo "${{ env.KUBE_CA_CERT }}" > $HOME/.kube/ca.crt
+        kubectl config set-cluster k8s --server=${{ env.KUBE_API_SERVER }}  --certificate-authority=$HOME/.kube/ca.crt  --embed-certs=true --kubeconfig=$HOME/.kube/config
+        kubectl config set-credentials admin --token=${{ env.KUBE_TOKEN }} --kubeconfig=$HOME/.kube/config
+        kubectl config set-context k8s --cluster=k8s --user=admin --kubeconfig=$HOME/.kube/config
+        kubectl config use-context k8s --kubeconfig=$HOME/.kube/config
         kubectl version
 
     - name: Create and Label Namespace
