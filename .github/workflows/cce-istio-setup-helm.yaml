@@ -64,6 +64,7 @@ jobs:
         kubectl config set-credentials admin --token=${{ env.KUBE_TOKEN }} --kubeconfig=$HOME/.kube/config
         kubectl config set-context k8s --cluster=k8s --user=admin --kubeconfig=$HOME/.kube/config
         kubectl config use-context k8s --kubeconfig=$HOME/.kube/config
+        kubectl get pods --all-namespaces
         kubectl version
 
     - name: Create and Label Namespace
