@@ -33,7 +33,7 @@ spec:
           serviceAnnotations:
             {{- toYaml .Values.istioIngressserviceAnnotations | nindent 12 }} 
     egressGateways:
-      - name: istio-egressgateway
+      - name: {{ .Values.meshName}}-istio-egressgateway
         namespace: {{ .Values.namespace }}
         enabled: true
         k8s:
