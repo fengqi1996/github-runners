@@ -31,4 +31,8 @@ spec:
           service:
             {{- toYaml .Values.istioIngressservice | nindent 12 }}
           serviceAnnotations:
-            {{- toYaml .Values.istioIngressserviceAnnotations | nindent 12 }}
+            {{- toYaml .Values.istioIngressserviceAnnotations | nindent 12 }} 
+    egressGateways:
+      - name: istio-egressgateway
+        namespace: {{ .Values.namespace }}
+        enabled: true
