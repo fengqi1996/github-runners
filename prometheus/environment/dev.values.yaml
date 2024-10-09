@@ -26,7 +26,7 @@ prometheus:
           resources:
             requests:
               storage: 20Gi
-          storageClassName: csi-disk-topology
+          storageClassName: hw-dev-myais
     thanos:
       resources: # .Values.prometheus.prometheusSpec.thanos.resources
         limits:
