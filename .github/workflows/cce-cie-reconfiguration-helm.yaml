@@ -10,6 +10,7 @@ on:
         options: 
         - uat
         - staging
+        - dev
 
 env: 
   ENVIRONMENT: ${{ github.event.inputs.environment }}
@@ -22,6 +23,7 @@ jobs:
   deploy-cce-monitoring-helm:
     name: CIE Reconfiguration
     runs-on: debian
+    environment: ${{ github.event.inputs.environment }}
     steps:
     - uses: actions/checkout@v4
       name: Package step
@@ -43,6 +45,8 @@ jobs:
           echo "${{ secrets.KUBE_CONFIG_AIS_UAT }}" | base64 -d > $HOME/.kube/config
         elif [[ "${{ github.event.inputs.environment }}" == "staging" ]]; then
           echo "${{ secrets.KUBE_CONFIG_AIS_STAGING }}" | base64 -d > $HOME/.kube/config
+        elif [[ "${{ github.event.inputs.environment }}" == "dev" ]]; then
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
         else
           echo "Invalid environment selection"
           exit 1
