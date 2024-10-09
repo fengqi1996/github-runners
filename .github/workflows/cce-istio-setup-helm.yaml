@@ -9,6 +9,7 @@ on:
         options: 
         - uat
         - staging
+        - dev
       project:
         type: choice
         options:
