@@ -9,7 +9,7 @@ on:
         options: 
         - cce-uat
         - cce-staging
-        - cce-dev
+        - dev
 env:
   HW_ACCESS_KEY: ${{ secrets.HW_ACCESS_KEY }}
   HW_SECRET_KEY: ${{ secrets.HW_SECRET_KEY }}
