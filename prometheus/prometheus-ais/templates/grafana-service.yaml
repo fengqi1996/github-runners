@@ -7,7 +7,6 @@ metadata:
     app: grafana
 spec:
   type: ClusterIP
-  externalTrafficPolicy: Cluster
   ports:
     - name: grafana-service
       protocol: TCP
