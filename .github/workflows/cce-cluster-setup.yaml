@@ -9,6 +9,7 @@ on:
         options: 
         - cce-uat
         - cce-staging
+        - cce-dev
 env:
   HW_ACCESS_KEY: ${{ secrets.HW_ACCESS_KEY }}
   HW_SECRET_KEY: ${{ secrets.HW_SECRET_KEY }}
@@ -22,7 +23,7 @@ jobs:
   terraform:
     name: 'Terraform Apply'
     runs-on: ubuntu-latest
-
+    environment: ${{ github.event.inputs.environment }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4

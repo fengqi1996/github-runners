@@ -109,7 +109,7 @@ resource "huaweicloud_cce_node" "cce-node" {
   flavor_id         = "c7n.xlarge.2"
   availability_zone = data.huaweicloud_availability_zones.cce-az.names[0]
   password          = var.password
-  runtime           = "docker"
+  runtime           = "containerd"
   os                = "EulerOS 2.9"
   root_volume {
     size       = 40
@@ -125,11 +125,11 @@ resource "huaweicloud_cce_node_pool" "node_pool" {
   cluster_id               = huaweicloud_cce_cluster.huawei-cce.id
   name                     = "cce-node-pool-${var.environment}-${random_string.random_suffix.result}"
   os                       = "EulerOS 2.9"
-  initial_node_count       = 3
+  initial_node_count       = 4
   flavor_id                = "c7n.xlarge.2"
   password                 = var.password
   scall_enable             = true
-  min_node_count           = 3
+  min_node_count           = 4
   max_node_count           = 10
   scale_down_cooldown_time = 100
   priority                 = 1
@@ -154,57 +154,57 @@ variable "cluster_id" {
   default = "33e24729-1dc9-11ef-abd5-0255ac100039"
 }
 
-# variable "addon_name" {
-#   type = string
-#   default = "cie-collector"
-# }
+variable "addon_name" {
+  type = string
+  default = "cie-collector"
+}
 
-# variable "addon_version" {
-#   type = string
-#   default = "3.10.1"
-# }
+variable "addon_version" {
+  type = string
+  default = "3.10.1"
+}
 
-# data "huaweicloud_cce_addon_template" "cie-collector" {
-#   cluster_id = huaweicloud_cce_cluster.huawei-cce.id
-#   name       = var.addon_name
-#   version    = var.addon_version
-# }
+data "huaweicloud_cce_addon_template" "cie-collector" {
+  cluster_id = huaweicloud_cce_cluster.huawei-cce.id
+  name       = var.addon_name
+  version    = var.addon_version
+}
 
-# resource "huaweicloud_cce_addon" "cie-collector" {
-#   cluster_id    = huaweicloud_cce_cluster.huawei-cce.id
-#   template_name = var.addon_name
-#   # version       = var.addon_version
-#   values {
-#     basic_json  = jsonencode(jsondecode(data.huaweicloud_cce_addon_template.cie-collector.spec).basic)
-#     custom_json = jsonencode(merge(
-#       jsondecode(data.huaweicloud_cce_addon_template.cie-collector.spec).parameters.custom,
-#       {
-#         cluster_id = huaweicloud_cce_cluster.huawei-cce.id
-#         tenant_id  = var.project_ID
-#         retention  = "1d"
-#         enable_nodeAffinity=true
-#         shards = 2
-#         storage_class="csi-disk-topology"
-#         storage_size="20Gi"
-#         storage_type="SAS"
-#         supportServerModeSharding=true
-#         highAvailability=true # Two Replicas data
-#         scrapeInterval="20s" # 5 seconds interval, 15s, 20s, 25s, 30s...
-#         enable_grafana=true 
-#       }
-#     ))
-#     flavor_json = jsonencode(
-#       jsondecode(data.huaweicloud_cce_addon_template.cie-collector.spec).parameters.flavor7,
-#     )
-#   }
-#   depends_on = [ huaweicloud_cce_node_pool.node_pool, huaweicloud_cce_node.cce-node ]
-# }
+resource "huaweicloud_cce_addon" "cie-collector" {
+  cluster_id    = huaweicloud_cce_cluster.huawei-cce.id
+  template_name = var.addon_name
+  # version       = var.addon_version
+  values {
+    basic_json  = jsonencode(jsondecode(data.huaweicloud_cce_addon_template.cie-collector.spec).basic)
+    custom_json = jsonencode(merge(
+      jsondecode(data.huaweicloud_cce_addon_template.cie-collector.spec).parameters.custom,
+      {
+        cluster_id = huaweicloud_cce_cluster.huawei-cce.id
+        tenant_id  = var.project_ID
+        retention  = "1d"
+        enable_nodeAffinity=true
+        shards = 2
+        storage_class="csi-disk-topology"
+        storage_size="20Gi"
+        storage_type="SAS"
+        supportServerModeSharding=true
+        highAvailability=true # Two Replicas data
+        scrapeInterval="20s" # 5 seconds interval, 15s, 20s, 25s, 30s...
+        enable_grafana=true 
+      }
+    ))
+    flavor_json = jsonencode(
+      jsondecode(data.huaweicloud_cce_addon_template.cie-collector.spec).parameters.flavor7,
+    )
+  }
+  depends_on = [ huaweicloud_cce_node_pool.node_pool, huaweicloud_cce_node.cce-node ]
+}
 
-# resource "huaweicloud_cce_addon" "grafana" {
-#   cluster_id    = huaweicloud_cce_cluster.huawei-cce.id
-#   template_name = "grafana"
-#   depends_on = [ huaweicloud_cce_node_pool.node_pool, huaweicloud_cce_node.cce-node ]
-# }
+resource "huaweicloud_cce_addon" "grafana" {
+  cluster_id    = huaweicloud_cce_cluster.huawei-cce.id
+  template_name = "grafana"
+  depends_on = [ huaweicloud_cce_node_pool.node_pool, huaweicloud_cce_node.cce-node ]
+}
 
 resource "huaweicloud_vpc_eip" "cce-nat-eip" {
   publicip {
@@ -221,7 +221,7 @@ resource "huaweicloud_vpc_eip" "cce-nat-eip" {
 resource "huaweicloud_nat_gateway" "cce-nat" {
   name        = "cce-nat-${var.environment}-${random_string.random_suffix.result}"
   description = "test for terraform"
-  spec        = "2"
+  spec        = "1"
   # Reference Spec: https://registry.terraform.io/providers/huaweicloud/huaweicloud/latest/docs/resources/nat_gateway
   # spec - (Required, String) Specifies the specification of the NAT gateway. The valid values are as follows:
 
