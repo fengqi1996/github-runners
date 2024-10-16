@@ -44,7 +44,7 @@ jobs:
         if [[ "${{ github.event.inputs.environment }}" == "uat" ]]; then
           echo "${{ secrets.KUBE_CONFIG_AIS_UAT }}" | base64 -d > $HOME/.kube/config
         elif [[ "${{ github.event.inputs.environment }}" == "staging" ]]; then
-          echo "${{ secrets.KUBE_CONFIG_AIS_STAGING }}" | base64 -d > $HOME/.kube/config
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
         elif [[ "${{ github.event.inputs.environment }}" == "dev" ]]; then
           echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
         else
