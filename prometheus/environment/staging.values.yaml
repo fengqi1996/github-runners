@@ -77,7 +77,7 @@ prometheusRule:
       severity: warning
       amo_name: amo_name_test
       node: 'Node-{{ $labels.node }}'
-      system_name: 'ocp'
+      system_name: 'Huawei cce'
       ems_name: ems-name-test
       ems_ip: ems-ip-test
       site_code: site-code-test
@@ -109,7 +109,7 @@ alertmanagerConfig:
     - name: FMGateway
       webhook_configs:
         - url: >-
-            http://fastapi-alert-webhook.monitoring.svc.cluster.local:8080/fmgateway?amo_name=sub-AROTest-az-dev&system_name=ocp&ems_name=sub-AROTest-az-dev&ems_ip=10.84.46.132&site_code=sub-AROTest-az-dev&network_type=IT
+            http://istio-ingressgateway.istio-system.svc.cluster.local:80/fmgateway?amo_name=sub-AROTest-az-dev&system_name=ocp&ems_name=sub-AROTest-az-dev&ems_ip=10.84.46.132&site_code=sub-AROTest-az-dev&network_type=IT
     - name: 'email-and-webhook'
       email_configs:
         - to: chan1992241@gmail.com
@@ -121,4 +121,4 @@ alertmanagerConfig:
           send_resolved: true
       webhook_configs:
         - url: >-
-            http://fastapi-alert-webhook.monitoring.svc.cluster.local:8080/fmgateway?amo_name=sub-AROTest-az-dev&system_name=ocp&ems_name=sub-AROTest-az-dev&ems_ip=10.84.46.132&site_code=sub-AROTest-az-dev&network_type=IT
+            http://istio-ingressgateway.istio-system.svc.cluster.local:80/fmgateway?amo_name=sub-AROTest-az-dev&system_name=ocp&ems_name=sub-AROTest-az-dev&ems_ip=10.84.46.132&site_code=sub-AROTest-az-dev&network_type=IT
