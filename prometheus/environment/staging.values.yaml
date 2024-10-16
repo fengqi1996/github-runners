@@ -54,9 +54,9 @@ prometheusRule:
       severity: warning
       amo_name: amo_name_test
       node: 'Node-{{ $labels.node }}'
-      system_name: 'ocp'
+      system_name: 'Huawei cce'
       ems_name: ems-name-test
-      ems_ip: ems-ip-test
+      ems_ip: 10.144.133.221
       site_code: site-code-test
       node_ip: 'node-ip-test'
       network_type: 'IT'
@@ -79,7 +79,7 @@ prometheusRule:
       node: 'Node-{{ $labels.node }}'
       system_name: 'Huawei cce'
       ems_name: ems-name-test
-      ems_ip: ems-ip-test
+      ems_ip: 10.144.133.221
       site_code: site-code-test
       node_ip: 'node-ip-test'
       network_type: 'IT'
