@@ -1,0 +1,73 @@
+name: CCE Istio Operator Install and Reconfiguration Helm
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        description: Environment
+        options: 
+        - uat
+        - staging
+        - dev
+      project:
+        type: choice
+        options:
+        - myais
+        - hw
+        - common
+      istioNamespace:
+        description: '<project>-istio-system / istio-system'
+        required: true
+      meshNamespace:
+        description: 'New namespace to add to the Istio mesh'
+        required: true
+
+env: 
+  ENVIRONMENT: ${{ github.event.inputs.environment }}
+  PROJECT: ${{ github.event.inputs.project }}
+  MESH_NAMESPACE: ${{ github.event.inputs.meshNamespace }}
+  istioNamespace: ${{ github.event.inputs.istioNamespace }}
+  KUBE_API_SERVER: ${{ secrets.KUBE_API_SERVER }}
+  KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}
+  KUBE_CA_CERT: ${{ secrets.KUBE_CA_CERT }}
+
+jobs:
+  deploy_istio:
+    runs-on: debian
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure kubectl
+      uses: Azure/setup-kubectl@v4.0.0
+      with:
+        version: 'latest'
+
+    - name: Install Helm
+      uses: azure/setup-helm@v4.2.0        
+        
+    - name: Set up Kubeconfig
+      run: |
+        mkdir -p $HOME/.kube
+        echo "${{ env.KUBE_CA_CERT }}" > $HOME/.kube/ca.crt
+        kubectl config set-cluster k8s --server=${{ env.KUBE_API_SERVER }}  --certificate-authority=$HOME/.kube/ca.crt  --embed-certs=true --kubeconfig=$HOME/.kube/config
+        kubectl config set-credentials admin --token=${{ env.KUBE_TOKEN }} --kubeconfig=$HOME/.kube/config
+        kubectl config set-context k8s --cluster=k8s --user=admin --kubeconfig=$HOME/.kube/config
+        kubectl config use-context k8s --kubeconfig=$HOME/.kube/config
+        kubectl get pods --all-namespaces
+        kubectl version  
+             
+    - name: Install Istio Operator
+      run: |
+        helm install istio-operator istio-operator -n istio-operator --create-namespace || true
+
+    - name: Install Kiali Operator
+      run: |
+        helm upgrade --install \
+          --namespace istio-operator \
+          --create-namespace \
+          --version v1.89.0 \
+          kiali-operator \
+          kiali-operator
