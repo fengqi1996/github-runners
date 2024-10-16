@@ -11,7 +11,7 @@ istioIngressservice:
 istioIngressserviceAnnotations:
   kubernetes.io/elb.class: "union"
   kubernetes.io/elb.autocreate: '{
-    "type":"inner",
+    "type":"inner"
   }'
 meshNamespaces:
   - alert
