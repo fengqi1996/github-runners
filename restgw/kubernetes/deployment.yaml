@@ -20,8 +20,7 @@ spec:
         - containerPort: 80
         env:
         - name: FMGATEWAY_URL
-          value: "https://fm-wsgw.ais.co.th/Test/FMGateway/rest/service/sendAlarm"
-          # value: "<ALARM_URL>"
+          value: "<ALARM_URL>"
 ---
 apiVersion: v1
 kind: Service
