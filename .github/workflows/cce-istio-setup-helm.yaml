@@ -72,6 +72,7 @@ jobs:
       run: |
         # Create and label istio-system namespace
         kubectl create namespace ${{ env.istioNamespace }} || true
+        kubectl label namespace ${{ env.istioNamespace }} pod-security.kubernetes.io/enforce=restricted
         kubectl label namespace ${{ env.istioNamespace }} usergroup=${{ env.PROJECT }} --overwrite=true
         # kubectl label namespace ${{ env.istioNamespace }} istio.io/rev=${{ env.PROJECT }} --overwrite=true
 
@@ -79,6 +80,7 @@ jobs:
         IFS=',' read -ra NAMESPACES <<< "${{ env.MESH_NAMESPACE }}"
         for namespace  in "${NAMESPACES[@]}"; do
           kubectl create namespace $namespace  || true
+          kubectl label namespace pod-security.kubernetes.io/enforce=restricted
         done  
 
         # Label mesh namespaces
