@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-alert-webhook
+  namespace: alert
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fastapi-alert-webhook
+  template:
+    metadata:
+      labels:
+        app: fastapi-alert-webhook
+    spec:
+      containers:
+      - name: fastapi
+        image: swr.ap-southeast-2.myhuaweicloud.com/p00591690/fastapi:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: FMGATEWAY_URL
+          value: "https://fm-wsgw.ais.co.th/Test/FMGateway/rest/service/sendAlarm"
+          # value: "<ALARM_URL>"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fastapi-alert-webhook
+  namespace: alert
+spec:
+  selector:
+    app: fastapi-alert-webhook
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 80
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: fastapi-gateway
+  namespace: alert
+spec:
+  selector:
+    istio: ingressgateway  # Use the default Istio ingress gateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: fastapi
+  namespace: alert
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - fastapi-gateway
+  http:
+  - match:
+    - uri:
+        prefix: "/"
+    route:
+    - destination:
+        host: fastapi-alert-webhook.alert.svc.cluster.local
+        port:
+          number: 8080
