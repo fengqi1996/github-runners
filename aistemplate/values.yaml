@@ -1,0 +1,111 @@
+project: sky
+serviceAccount:
+  create: true
+  namespace: sky-microservice-dev
+namespaces: 
+    - sky-istio-system
+    - sky-microservice-dev
+storageClass:
+  create: true
+# Specify the deployment environment: "prd", "dev", or "stg"
+deploymentEnvironment: "stg"
+
+# Specify the deployment site if the environment is "prd"
+deploymentSite: "sila"
+
+projectName: "sky"
+
+environment:
+  stg:
+    storage:
+      - name: sc-sky-mpo-istio-system-prometheus-stg
+        parameters:
+          csi.storage.k8s.io/csi-driver-name: disk.csi.everest.io
+          csi.storage.k8s.io/fstype: ext4
+          everest.io/disk-volume-type: SSD         # Ultra-high I/O EVS disk type, which cannot be customized.
+          everest.io/passthrough: "true"
+        provisioner: everest-csi-provisioner
+        reclaimPolicy: Delete
+        volumeBindingMode: Immediate
+        allowVolumeExpansion: true
+        quota: "1Gi"
+      - name: sc-sky-mpo-nfs-retain
+        mountOptions:
+        - vers=3
+        parameters:
+          csi.storage.k8s.io/csi-driver-name: nas.csi.everest.io
+          csi.storage.k8s.io/fstype: nfs
+          everest.io/share-access-level: rw
+          everest.io/share-access-to: 4a78c2fa-135d-428e-9d5c-1cd4dd3df846
+        provisioner: csi.huawei.com
+        reclaimPolicy: Retain
+        volumeBindingMode: Immediate
+        quota: "2Gi"
+    nfsMounts:
+      - name: file-sky-mpo-stg
+        appName: sky-skycache
+        storage: "10Gi"
+        accessModes: "ReadWriteMany"
+        target: "/mnt/file-share/onboarding"
+        storageClassName: sc-sky-mpo-nfs-retain
+        nfsPath: /sky-mpo-prd_config-ccp_TLS
+        nfsServer: 10.183.146.61
+  prd:
+    sila:
+      storage:
+        - name: sc-sky-mpo-nfs-retain
+          mountOptions:
+          - nfsvers=3
+          parameters:
+            allocType: thin
+            authClient: "*"
+            volumeType: fs
+          provisioner: csi.huawei.com
+          reclaimPolicy: Retain
+          allowVolumeExpansion: true
+          volumeBindingMode: Immediate
+        - name: sc-sky-mpo-istio-system-jaeger-elastic-prd
+          parameters:
+            allocType: thin
+            backend: PCCPSTG901SAN # evs
+            volumeType: lun
+            fsPermission: "777"
+          provisioner: csi.huawei.com
+          reclaimPolicy: Delete
+          volumeBindingMode: Immediate
+        - name: sc-sky-mpo-istio-system-prometheus-prd
+          parameters:
+            allocType: thin
+            backend: PCCPSTG901SAN
+            volumeType: lun
+            fsPermission: "777"
+          provisioner: csi.huawei.com
+          reclaimPolicy: Delete
+          volumeBindingMode: Immediate
+      nfsMounts:
+        - name: file-sky-mpo-prd
+          appName: sky-skycache
+          storage: "20Gi"
+          accessModes: "ReadWriteMany"
+          target: "/mnt/file-share/onboarding"
+          storageClassName: sc-sky-mpo-nfs-retain
+          nfsPath: /sky-mpo-prd_config-ccp_SILA
+          nfsServer: 10.183.200.161
+      azureFileStorages:
+        - name: file-sky-mpo-sit
+          appName: "sky-skycache"
+          storage: "5Gi"
+          accessModes: "ReadWriteMany"
+          target: "/mnt/file-share"
+          storageClassName: sc-sky-mpo-sit
+          shareName: file-sky-sit
+          storageAccountName: stskyazassedev002
+          mountOptions:
+            - dir_mode=0777
+            - file_mode=0777
+            - uid=0
+            - gid=0
+            - mfsymlinks
+            - cache=strict
+            - nosharesock
+            - actimeo=30

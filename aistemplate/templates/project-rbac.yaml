@@ -1,0 +1,154 @@
+{{- if .Values.serviceAccount.create -}}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: "github-runner-{{ .Values.project }}" # 
+  namespace: "{{ $.Values.serviceAccount.namespace }}"
+---
+{{- range $namespace := .Values.namespaces }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: "system:serviceaccount:{{ $namespace }}:github-runner-{{ $.Values.project }}:admin"
+  namespace: "{{ $namespace }}"
+subjects:
+  - kind: ServiceAccount
+    name: "github-runner-{{ $.Values.project }}"
+    namespace: "{{ $.Values.serviceAccount.namespace }}" # The namespace where the service account exists
+roleRef:
+  kind: ClusterRole
+  name: admin
+  apiGroup: rbac.authorization.k8s.io
+---
+{{- end }}
+{{- end }}
+# Create storage class
+{{- if .Values.storageClass.create -}}
+{{- $envConfig := "" }}
+{{- if eq .Values.deploymentEnvironment "prd" }}
+  {{- $siteEnvConfig := get .Values.environment .Values.deploymentEnvironment }}
+  {{- $envConfig = get $siteEnvConfig .Values.deploymentSite }}
+{{- else }}
+  {{- $envConfig = get .Values.environment .Values.deploymentEnvironment }}
+{{- end }}
+{{- if $envConfig.storage }}
+{{- range $sc := $envConfig.storage }}
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  {{- if .labels }}
+  labels:
+    {{- toYaml .labels | nindent 4 }}
+  {{- end }}
+  name: {{ $sc.name }}
+{{- if ($sc).provisioner }}
+provisioner: {{ ($sc).provisioner }}
+{{- else }}
+provisioner: file.csi.azure.com
+{{- end }}
+{{- if ($sc).allowVolumeExpansion }}
+allowVolumeExpansion: true
+{{- end }}
+parameters:
+{{- if ($sc).resourceGroup }}
+  resourceGroup: {{ $sc.resourceGroup }}
+{{- end }}
+{{- if ($sc).subscriptionID }}
+  subscriptionID: {{ $sc.subscriptionID }}
+{{- end }}
+{{- if ($sc).storageAccount }}
+  useDataPlaneAPI: {{ ($sc.useDataPlaneAPI | default false) | quote }}
+  storageAccount: {{ $sc.storageAccount }}
+  server: {{ $sc.server }}
+{{- end }}
+{{- if ($sc).secretNamespace }}
+  secretNamespace: {{ ($sc).secretNamespace }}
+{{- end }}
+  {{- if ($sc).shareName }}
+  shareName: {{ $sc.shareName }}
+{{- end }}
+{{- if ($sc).parameters }}
+  {{- toYaml ($sc).parameters | nindent 2 }}
+{{- end }}
+reclaimPolicy: {{ $sc.reclaimPolicy }}
+volumeBindingMode: {{ $sc.volumeBindingMode }}
+{{- if ($sc).mountOptions }}
+mountOptions:
+{{- range $item := $sc.mountOptions }}
+  - {{ $item }}
+{{- end }}
+{{- end }}
+
+---
+{{- range $namespace := $.Values.namespaces}}
+{{- if $sc.quota }}
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: {{ $sc.name }}
+  namespace: {{ $namespace}}
+spec:
+  hard:
+    {{ $sc.name }}.storageclass.storage.k8s.io/requests.storage: {{ $sc.quota }}
+---
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: monitoring-edit
+rules:
+  - verbs:
+      - '*'
+    apiGroups:
+      - monitoring.coreos.com
+    resources:
+      - servicemonitors
+      - podmonitors
+      - prometheusrules
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: alert-routing-edit
+rules:
+  - verbs:
+      - '*'
+    apiGroups:
+      - monitoring.coreos.com
+    resources:
+      - alertmanagerconfigs
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: "system:serviceaccount:monitoring:github-runner-{{ $.Values.project }}:monitoring-edit"
+  namespace: "monitoring"
+subjects:
+  - kind: ServiceAccount
+    name: "github-runner-{{ $.Values.project }}"
+    namespace: "{{ $.Values.serviceAccount.namespace }}" # The namespace where the service account exists
+roleRef:
+  kind: ClusterRole
+  name: monitoring-edit
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: "system:serviceaccount:monitoring:github-runner-{{ $.Values.project }}:alert-routing-edit"
+  namespace: "monitoring"
+subjects:
+  - kind: ServiceAccount
+    name: "github-runner-{{ $.Values.project }}"
+    namespace: "{{ $.Values.serviceAccount.namespace }}" # The namespace where the service account exists
+roleRef:
+  kind: ClusterRole
+  name: alert-routing-edit
+  apiGroup: rbac.authorization.k8s.io
+
+
