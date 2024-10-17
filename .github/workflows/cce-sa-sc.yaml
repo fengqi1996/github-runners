@@ -1,0 +1,66 @@
+# Change secret to AIS.
+name: CIE Reconfiguration Helm
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        description: Environment
+        options: 
+        - uat
+        - staging
+        - dev
+      project:
+        type: choice
+        options:
+        - hw
+
+env: 
+  ENVIRONMENT: ${{ github.event.inputs.environment }}
+  PROJECT: ${{ github.event.inputs.project }}
+
+jobs:
+  deploy-cce-monitoring-helm:
+    name: CIE Reconfiguration
+    runs-on: debian
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+    - uses: actions/checkout@v4
+      name: Package step
+
+    - name: Set up Helm
+      uses: azure/setup-helm@v4.2.0
+      id: install
+
+    - name: Kubectl tool installer
+      uses: Azure/setup-kubectl@v4.0.0
+      with:
+        version: latest
+
+    - name: Setup Cluster Secrets
+      run: |
+        mkdir -p $HOME/.kube
+        export KUBECONFIG=$HOME/.kube/config
+        if [[ "${{ github.event.inputs.environment }}" == "uat" ]]; then
+          echo "${{ secrets.KUBE_CONFIG_AIS_UAT }}" | base64 -d > $HOME/.kube/config
+        elif [[ "${{ github.event.inputs.environment }}" == "staging" ]]; then
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+        elif [[ "${{ github.event.inputs.environment }}" == "dev" ]]; then
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+        else
+          echo "Invalid environment selection"
+          exit 1
+        fi
+        kubectl version
+
+    - name: Helm Template
+      working-directory: ${{ github.workspace }}
+      run: |
+        helm template aistemplate --values aistemplate/environment/${{ env.PROJECT }}-${{ env.ENVIRONMENT }}.values.yaml --output-dir aistemplate/output
+
+    - name: Create SC and SA
+      working-directory: ${{ github.workspace }}
+      run: |
+        cat aistemplate/output/aistemplate/templates/project-rbac.yaml
+        kubectl apply -f aistemplate/output/aistemplate/templates/project-rbac.yaml
