@@ -1,5 +1,5 @@
 # Change secret to AIS.
-name: CIE Project Initialization
+name: CCE Project Initialization
 
 on:
   workflow_dispatch:
