@@ -46,7 +46,7 @@ jobs:
 
     - name: Change Alarm URL in deployment
       run: | 
-        sed -i "s/<ALARM_URL>/${{ env.ALARM_URL }}/g" restgw/kubernetes/deployment.yaml
+        sed -i "s|<ALARM_URL>|${{ env.ALARM_URL }}|g" restgw/kubernetes/deployment.yaml
         cat restgw/kubernetes/deployment.yaml
     
     - name: Apply Alert Service Deployment
