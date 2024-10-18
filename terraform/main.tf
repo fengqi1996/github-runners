@@ -25,6 +25,11 @@ variable "environment" {
   default = "test"
 }
 
+variable "obs-bucket" {
+  type = string
+  default = "lts-bucket-ais"
+}
+
 provider "huaweicloud" {
   region     = var.availability_zone
   access_key = var.access_key
@@ -34,10 +39,10 @@ provider "huaweicloud" {
 terraform {
   backend "s3" {
     # Reference: https://registry.terraform.io/providers/huaweicloud/hcso/latest/docs/guides/remote-state-backend
-    bucket   = "ais-test-terraform"
+    bucket   = "ais-test-jy"
     key      = "terraform.tfstate"
-    region   = "ap-southeast-2"
-    endpoint = "https://obs.ap-southeast-2.myhuaweicloud.com"
+    region   = "ap-southeast-3"
+    endpoint = "https://obs.ap-southeast-3.myhuaweicloud.com"
 
     skip_region_validation      = true
     skip_credentials_validation = true
@@ -206,6 +211,97 @@ resource "huaweicloud_cce_addon" "grafana" {
   depends_on = [ huaweicloud_cce_node_pool.node_pool, huaweicloud_cce_node.cce-node ]
 }
 
+resource "huaweicloud_lts_group" "lts-logs-group" {
+  group_name  = "lts-logs-group"
+  ttl_in_days = 20
+  region      = var.availability_zone
+}
+
+resource "huaweicloud_lts_stream" "lts-event-stream" {
+  group_id    = huaweicloud_lts_group.lts-logs-group.id
+  stream_name = "lts-logs-group_stream"
+}
+
+resource "huaweicloud_lts_stream" "lts-stdout-stream" {
+  group_id    = huaweicloud_lts_group.lts-logs-group.id
+  stream_name = "lts-stdout-group_stream"
+}
+
+data "huaweicloud_cce_addon_template" "log-agent" {
+  cluster_id = huaweicloud_cce_cluster.huawei-cce.id
+  name       = "log-agent"
+  version    = "1.3.2"
+}
+
+resource "huaweicloud_cce_addon" "log-agent" {
+  cluster_id    = huaweicloud_cce_cluster.huawei-cce.id
+  template_name = "log-agent"
+  values {
+    basic_json  = jsonencode(jsondecode(data.huaweicloud_cce_addon_template.log-agent.spec).basic)
+    custom_json = jsonencode(merge(
+      jsondecode(data.huaweicloud_cce_addon_template.log-agent.spec).parameters.custom,
+      {
+        "ltsEventStreamID": huaweicloud_lts_stream.lts-event-stream.id,
+        "ltsStdoutStreamID": huaweicloud_lts_stream.lts-stdout-stream.id,
+        "ltsGroupID": huaweicloud_lts_group.lts-logs-group.id,
+        "multiAZEnabled": true,
+      },
+    ))
+    flavor_json = jsonencode(
+      jsondecode(data.huaweicloud_cce_addon_template.log-agent.spec).parameters.flavor2,
+    )
+  }
+  depends_on = [ huaweicloud_cce_node_pool.node_pool, huaweicloud_cce_node.cce-node ]
+}
+
+resource "huaweicloud_obs_bucket" "bucket" {
+  bucket     = var.obs-bucket
+  acl        = "private"
+
+  lifecycle_rule {
+    name    = "log_lifecycle"
+    enabled = true
+
+    transition {
+      days          = 10
+      storage_class = "COLD"
+    }
+  }
+}
+
+resource "huaweicloud_lts_transfer" "lts-obs-transfer" {
+  region = var.availability_zone
+  log_group_id = huaweicloud_lts_group.lts-logs-group.id
+
+  log_streams {
+    log_stream_id  = huaweicloud_lts_stream.lts-event-stream.id
+    log_stream_name = "lts-logs-group_stream"
+  }
+
+  log_streams {
+    log_stream_id  = huaweicloud_lts_stream.lts-stdout-stream.id
+    log_stream_name = "lts-stdout-group_stream"
+  }
+
+  log_transfer_info {
+    log_transfer_type   = "OBS"
+    log_transfer_mode   = "cycle"
+    log_storage_format  = "RAW"
+    log_transfer_status = "ENABLE"
+
+    log_transfer_detail {
+      obs_period          = 3
+      obs_period_unit     = "hour"
+      obs_bucket_name     = var.obs-bucket
+      obs_dir_prefix_name = "cce-hw-poc_"
+      obs_prefix_name     = "hw_"
+      obs_time_zone       = "UTC"
+      obs_time_zone_id    = "Etc/GMT"
+    }
+  }
+  depends_on = [ huaweicloud_obs_bucket.bucket ]
+}
+
 resource "huaweicloud_vpc_eip" "cce-nat-eip" {
   publicip {
     type = "5_bgp"
@@ -237,4 +333,12 @@ resource "huaweicloud_nat_snat_rule" "cce-snat-rule" {
   nat_gateway_id = huaweicloud_nat_gateway.cce-nat.id
   floating_ip_id = huaweicloud_vpc_eip.cce-nat-eip.id
   subnet_id      = huaweicloud_vpc_subnet.cce-subnet.id
+}
+
+
+resource "huaweicloud_er_vpc_attachment" "test" {
+  instance_id = "5bb5286e-38c7-456b-9918-412277905e4d"
+  vpc_id      = huaweicloud_vpc.cce-vpc.id
+  subnet_id   = huaweicloud_vpc_subnet.cce-subnet.id
+  name        = "hw-cce-bbk-attachment"
 }
