@@ -10,11 +10,6 @@ variable "password" {
   type = string
 }
 
-variable "project_ID" {
-  type = string
-  default = "0"
-}
-
 variable "availability_zone" {
   type = string
   default = "ap-southeast-2"
@@ -39,10 +34,10 @@ provider "huaweicloud" {
 terraform {
   backend "s3" {
     # Reference: https://registry.terraform.io/providers/huaweicloud/hcso/latest/docs/guides/remote-state-backend
-    bucket   = "ais-test-jy"
+    bucket   = "ais-pipeline"
     key      = "terraform.tfstate"
-    region   = "ap-southeast-3"
-    endpoint = "https://obs.ap-southeast-3.myhuaweicloud.com"
+    region   = "ap-southeast-2"
+    endpoint = "https://obs.ap-southeast-2.myhuaweicloud.com"
 
     skip_region_validation      = true
     skip_credentials_validation = true
@@ -52,10 +47,15 @@ terraform {
   }
 }
 
+resource "huaweicloud_enterprise_project" "itcp-microservice-staging" {
+  name        = "itcp-microservice-staging"
+  description = "Terraform ITCP Microservice Staging "
+}
+
 resource "huaweicloud_vpc" "cce-vpc" {
   name                  = "cce-vpc-${var.environment}-${random_string.random_suffix.result}"
   cidr                  = "192.168.0.0/16"
-  enterprise_project_id = var.project_ID
+  enterprise_project_id = huaweicloud_enterprise_project.itcp-microservice-staging.id
 }
 
 resource "huaweicloud_vpc_subnet" "cce-subnet" {
@@ -65,17 +65,17 @@ resource "huaweicloud_vpc_subnet" "cce-subnet" {
   vpc_id        = huaweicloud_vpc.cce-vpc.id
 }
 
-resource "huaweicloud_vpc_eip" "cce-control-plane-eip" {
-  publicip {
-    type = "5_bgp"
-  }
-  bandwidth {
-    name        = "cce-control-plane-eip-${var.environment}-${random_string.random_suffix.result}"
-    size        = 10
-    share_type  = "PER"
-    charge_mode = "traffic"
-  }
-}
+# resource "huaweicloud_vpc_eip" "cce-control-plane-eip" {
+#   publicip {
+#     type = "5_bgp"
+#   }
+#   bandwidth {
+#     name        = "cce-control-plane-eip-${var.environment}-${random_string.random_suffix.result}"
+#     size        = 10
+#     share_type  = "PER"
+#     charge_mode = "traffic"
+#   }
+# }
 
 resource "random_string" "random_suffix" {
   length  = 8
@@ -91,7 +91,7 @@ resource "huaweicloud_cce_cluster" "huawei-cce" {
   container_network_type = "overlay_l2"
   eip                    = huaweicloud_vpc_eip.cce-control-plane-eip.address
   cluster_version        = "v1.28"
-  enterprise_project_id  = var.project_ID
+  enterprise_project_id  = huaweicloud_enterprise_project.itcp-microservice-staging.id
   masters {
     availability_zone = "ap-southeast-2a"
   }
@@ -152,11 +152,6 @@ resource "huaweicloud_cce_node_pool" "node_pool" {
     size       = 100
     volumetype = "SAS"
   }
-}
-
-variable "cluster_id" {
-  type = string
-  default = "33e24729-1dc9-11ef-abd5-0255ac100039"
 }
 
 variable "addon_name" {
@@ -263,7 +258,7 @@ resource "huaweicloud_obs_bucket" "bucket" {
     enabled = true
 
     transition {
-      days          = 10
+      days          = 1
       storage_class = "COLD"
     }
   }
@@ -302,38 +297,38 @@ resource "huaweicloud_lts_transfer" "lts-obs-transfer" {
   depends_on = [ huaweicloud_obs_bucket.bucket ]
 }
 
-resource "huaweicloud_vpc_eip" "cce-nat-eip" {
-  publicip {
-    type = "5_bgp"
-  }
-  bandwidth {
-    name        = "cce-nat-eip-${var.environment}-${random_string.random_suffix.result}"
-    size        = 10
-    share_type  = "PER"
-    charge_mode = "traffic"
-  }
-}
+# resource "huaweicloud_vpc_eip" "cce-nat-eip" {
+#   publicip {
+#     type = "5_bgp"
+#   }
+#   bandwidth {
+#     name        = "cce-nat-eip-${var.environment}-${random_string.random_suffix.result}"
+#     size        = 10
+#     share_type  = "PER"
+#     charge_mode = "traffic"
+#   }
+# }
 
-resource "huaweicloud_nat_gateway" "cce-nat" {
-  name        = "cce-nat-${var.environment}-${random_string.random_suffix.result}"
-  description = "test for terraform"
-  spec        = "1"
-  # Reference Spec: https://registry.terraform.io/providers/huaweicloud/huaweicloud/latest/docs/resources/nat_gateway
-  # spec - (Required, String) Specifies the specification of the NAT gateway. The valid values are as follows:
+# resource "huaweicloud_nat_gateway" "cce-nat" {
+#   name        = "cce-nat-${var.environment}-${random_string.random_suffix.result}"
+#   description = "test for terraform"
+#   spec        = "1"
+#   # Reference Spec: https://registry.terraform.io/providers/huaweicloud/huaweicloud/latest/docs/resources/nat_gateway
+#   # spec - (Required, String) Specifies the specification of the NAT gateway. The valid values are as follows:
 
-  # 1: Small type, which supports up to 10,000 SNAT connections.
-  # 2: Medium type, which supports up to 50,000 SNAT connections.
-  # 3: Large type, which supports up to 200,000 SNAT connections.
-  # 4: Extra-large type, which supports up to 1,000,000 SNAT connections.
-  vpc_id      = huaweicloud_vpc.cce-vpc.id
-  subnet_id   = huaweicloud_vpc_subnet.cce-subnet.id
-}
+#   # 1: Small type, which supports up to 10,000 SNAT connections.
+#   # 2: Medium type, which supports up to 50,000 SNAT connections.
+#   # 3: Large type, which supports up to 200,000 SNAT connections.
+#   # 4: Extra-large type, which supports up to 1,000,000 SNAT connections.
+#   vpc_id      = huaweicloud_vpc.cce-vpc.id
+#   subnet_id   = huaweicloud_vpc_subnet.cce-subnet.id
+# }
 
-resource "huaweicloud_nat_snat_rule" "cce-snat-rule" {
-  nat_gateway_id = huaweicloud_nat_gateway.cce-nat.id
-  floating_ip_id = huaweicloud_vpc_eip.cce-nat-eip.id
-  subnet_id      = huaweicloud_vpc_subnet.cce-subnet.id
-}
+# resource "huaweicloud_nat_snat_rule" "cce-snat-rule" {
+#   nat_gateway_id = huaweicloud_nat_gateway.cce-nat.id
+#   floating_ip_id = huaweicloud_vpc_eip.cce-nat-eip.id
+#   subnet_id      = huaweicloud_vpc_subnet.cce-subnet.id
+# }
 
 
 resource "huaweicloud_er_vpc_attachment" "test" {
