@@ -180,7 +180,7 @@ resource "huaweicloud_cce_addon" "cie-collector" {
       jsondecode(data.huaweicloud_cce_addon_template.cie-collector.spec).parameters.custom,
       {
         cluster_id = huaweicloud_cce_cluster.huawei-cce.id
-        tenant_id  = var.project_ID
+        tenant_id  = huaweicloud_enterprise_project.itcp-microservice-staging.id
         retention  = "1d"
         enable_nodeAffinity=true
         shards = 2
