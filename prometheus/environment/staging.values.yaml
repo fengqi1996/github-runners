@@ -73,7 +73,7 @@ prometheusRule:
     labels:
       notification_channel: fmgateway
       namespace: '{{ $labels.namespace }}'
-      prometheus: openshift-monitoring/k8s
+      prometheus: cce/k8s
       severity: warning
       amo_name: amo_name_test
       node: 'Node-{{ $labels.node }}'
@@ -81,7 +81,7 @@ prometheusRule:
       ems_name: ems-name-test
       ems_ip: 10.144.133.221
       site_code: site-code-test
-      node_ip: 'node-ip-test'
+      node_ip: '{{ $labels.node }}'
       network_type: 'IT'
 alertmanagerConfig:
   global:
