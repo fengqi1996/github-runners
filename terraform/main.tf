@@ -337,3 +337,7 @@ resource "huaweicloud_er_vpc_attachment" "test" {
   subnet_id   = huaweicloud_vpc_subnet.cce-subnet.id
   name        = "hw-cce-bbk-attachment"
 }
+
+output "kube-config" {
+  value = huaweicloud_cce_cluster.huawei-cce.kube_config_raw
+}
