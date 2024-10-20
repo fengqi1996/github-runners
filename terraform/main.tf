@@ -65,17 +65,17 @@ resource "huaweicloud_vpc_subnet" "cce-subnet" {
   vpc_id        = huaweicloud_vpc.cce-vpc.id
 }
 
-# resource "huaweicloud_vpc_eip" "cce-control-plane-eip" {
-#   publicip {
-#     type = "5_bgp"
-#   }
-#   bandwidth {
-#     name        = "cce-control-plane-eip-${var.environment}-${random_string.random_suffix.result}"
-#     size        = 10
-#     share_type  = "PER"
-#     charge_mode = "traffic"
-#   }
-# }
+resource "huaweicloud_vpc_eip" "cce-control-plane-eip" {
+  publicip {
+    type = "5_bgp"
+  }
+  bandwidth {
+    name        = "cce-control-plane-eip-${var.environment}-${random_string.random_suffix.result}"
+    size        = 10
+    share_type  = "PER"
+    charge_mode = "traffic"
+  }
+}
 
 resource "random_string" "random_suffix" {
   length  = 8
@@ -89,7 +89,7 @@ resource "huaweicloud_cce_cluster" "huawei-cce" {
   vpc_id                 = huaweicloud_vpc.cce-vpc.id
   subnet_id              = huaweicloud_vpc_subnet.cce-subnet.id
   container_network_type = "overlay_l2"
-  # eip                    = huaweicloud_vpc_eip.cce-control-plane-eip.address
+  eip                    = huaweicloud_vpc_eip.cce-control-plane-eip.address
   cluster_version        = "v1.28"
   enterprise_project_id  = huaweicloud_enterprise_project.itcp-microservice-staging.id
   masters {
