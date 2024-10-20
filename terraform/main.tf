@@ -341,3 +341,7 @@ resource "huaweicloud_er_vpc_attachment" "test" {
 output "kube-config" {
   value = huaweicloud_cce_cluster.huawei-cce.kube_config_raw
 }
+
+output "lts-logs-group" {
+  value = huaweicloud_lts_group.lts-logs-group.id
+}
