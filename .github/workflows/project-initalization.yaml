@@ -33,9 +33,9 @@ jobs:
         mkdir -p $HOME/.kube
         export KUBECONFIG=$HOME/.kube/config
         if [[ "${{ github.event.inputs.environment }}" == "uat" ]]; then
-          echo "${{ secrets.KUBE_CONFIG_AIS_UAT }}" | base64 -d > $KUBECONFIG
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $KUBECONFIG
         elif [[ "${{ github.event.inputs.environment }}" == "staging" ]]; then
-          echo "${{ secrets.KUBE_CONFIG_AIS_STAGING }}" | base64 -d > $KUBECONFIG
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $KUBECONFIG
         elif [[ "${{ github.event.inputs.environment }}" == "dev" ]]; then
           echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $KUBECONFIG
         else
