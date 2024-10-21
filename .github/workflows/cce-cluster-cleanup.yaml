@@ -7,8 +7,9 @@ on:
         type: choice
         description: Environment
         options: 
-        - cce-uat
-        - cce-staging
+        - uat
+        - staging
+        - dev
         
 env:
   HW_ACCESS_KEY: ${{ secrets.HW_ACCESS_KEY }}
