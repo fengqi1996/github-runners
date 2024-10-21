@@ -54,28 +54,28 @@ resource "huaweicloud_enterprise_project" "itcp-microservice-staging" {
 
 resource "huaweicloud_vpc" "cce-vpc" {
   name                  = "cce-vpc-${var.environment}-${random_string.random_suffix.result}"
-  cidr                  = "192.168.0.0/16"
+  cidr                  = "10.144.134.0/24"
   enterprise_project_id = huaweicloud_enterprise_project.itcp-microservice-staging.id
 }
 
 resource "huaweicloud_vpc_subnet" "cce-subnet" {
   name       = "cce-subnet"
-  cidr       = "192.168.0.0/16"
-  gateway_ip = "192.168.0.1"
+  cidr       = "10.144.134.0/24"
+  gateway_ip = "10.144.134.1"
   vpc_id        = huaweicloud_vpc.cce-vpc.id
 }
 
-resource "huaweicloud_vpc_eip" "cce-control-plane-eip" {
-  publicip {
-    type = "5_bgp"
-  }
-  bandwidth {
-    name        = "cce-control-plane-eip-${var.environment}-${random_string.random_suffix.result}"
-    size        = 10
-    share_type  = "PER"
-    charge_mode = "traffic"
-  }
-}
+# resource "huaweicloud_vpc_eip" "cce-control-plane-eip" {
+#   publicip {
+#     type = "5_bgp"
+#   }
+#   bandwidth {
+#     name        = "cce-control-plane-eip-${var.environment}-${random_string.random_suffix.result}"
+#     size        = 10
+#     share_type  = "PER"
+#     charge_mode = "traffic"
+#   }
+# }
 
 resource "random_string" "random_suffix" {
   length  = 8
@@ -84,12 +84,12 @@ resource "random_string" "random_suffix" {
 }
 
 resource "huaweicloud_cce_cluster" "huawei-cce" {
-  name                   = "huawei-ais-${var.environment}-${random_string.random_suffix.result}"
+  name                   = "huawei-ais-${var.environment}"
   flavor_id              = "cce.s2.small" # HA, 50 Nodes -- cce.s2.xlarge, HA, 2000 Nodes
   vpc_id                 = huaweicloud_vpc.cce-vpc.id
   subnet_id              = huaweicloud_vpc_subnet.cce-subnet.id
   container_network_type = "overlay_l2"
-  eip                    = huaweicloud_vpc_eip.cce-control-plane-eip.address
+  # eip                    = huaweicloud_vpc_eip.cce-control-plane-eip.address
   cluster_version        = "v1.28"
   enterprise_project_id  = huaweicloud_enterprise_project.itcp-microservice-staging.id
   masters {
@@ -110,7 +110,7 @@ data "huaweicloud_availability_zones" "cce-az" {
 
 resource "huaweicloud_cce_node" "cce-node" {
   cluster_id        = huaweicloud_cce_cluster.huawei-cce.id
-  name              = "cce-node-${var.environment}-${random_string.random_suffix.result}"
+  name              = "cce-node-${var.environment}"
   flavor_id         = "c7n.xlarge.2"
   availability_zone = data.huaweicloud_availability_zones.cce-az.names[0]
   password          = var.password
@@ -128,7 +128,7 @@ resource "huaweicloud_cce_node" "cce-node" {
 
 resource "huaweicloud_cce_node_pool" "node_pool" {
   cluster_id               = huaweicloud_cce_cluster.huawei-cce.id
-  name                     = "cce-node-pool-${var.environment}-${random_string.random_suffix.result}"
+  name                     = "cce-node-pool-${var.environment}"
   os                       = "EulerOS 2.9"
   initial_node_count       = 4
   flavor_id                = "c7n.xlarge.2"
@@ -142,7 +142,7 @@ resource "huaweicloud_cce_node_pool" "node_pool" {
   # runtime                  = "containerd"
 
   labels = {
-    "cce-node-pool" = "cce-node-pool-${var.environment}-${random_string.random_suffix.result}"
+    "cce-node-pool" = "cce-node-pool-${var.environment}"
   }
   root_volume {
     size       = 40
@@ -297,12 +297,39 @@ resource "huaweicloud_lts_transfer" "lts-obs-transfer" {
   depends_on = [ huaweicloud_obs_bucket.bucket ]
 }
 
+resource "huaweicloud_vpc_route_table" "route_table_er" {
+  name    = "route_table_er"
+  vpc_id  = huaweicloud_vpc.cce-vpc.id
+  subnets = [huaweicloud_vpc_subnet.cce-subnet.id]
+
+  route {
+    destination = "172.16.0.0/12"
+    type        = "er"
+    nexthop     = "5bb5286e-38c7-456b-9918-412277905e4d"
+  }
+  route {
+    destination = "10.0.0.0/8"
+    type        = "er"
+    nexthop     = "5bb5286e-38c7-456b-9918-412277905e4d"
+  }
+  route {
+    destination = "192.168.0.0/16"
+    type        = "er"
+    nexthop     = "5bb5286e-38c7-456b-9918-412277905e4d"
+  }
+  route {
+    destination = "0.0.0.0/0"
+    type        = "er"
+    nexthop     = "5bb5286e-38c7-456b-9918-412277905e4d"
+  }
+}
+
 # resource "huaweicloud_vpc_eip" "cce-nat-eip" {
 #   publicip {
 #     type = "5_bgp"
 #   }
 #   bandwidth {
-#     name        = "cce-nat-eip-${var.environment}-${random_string.random_suffix.result}"
+#     name        = "cce-nat-eip-${var.environment}"
 #     size        = 10
 #     share_type  = "PER"
 #     charge_mode = "traffic"
@@ -310,7 +337,7 @@ resource "huaweicloud_lts_transfer" "lts-obs-transfer" {
 # }
 
 # resource "huaweicloud_nat_gateway" "cce-nat" {
-#   name        = "cce-nat-${var.environment}-${random_string.random_suffix.result}"
+#   name        = "cce-nat-${var.environment}"
 #   description = "test for terraform"
 #   spec        = "1"
 #   # Reference Spec: https://registry.terraform.io/providers/huaweicloud/huaweicloud/latest/docs/resources/nat_gateway
