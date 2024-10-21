@@ -153,6 +153,7 @@ resource "huaweicloud_cce_node_pool" "node_pool" {
     size       = 100
     volumetype = "SAS"
   }
+  # depends_on = [ huaweicloud_vpc_route_table.route_table_er ]
 }
 
 variable "addon_name" {
@@ -298,31 +299,60 @@ resource "huaweicloud_lts_transfer" "lts-obs-transfer" {
   depends_on = [ huaweicloud_obs_bucket.bucket ]
 }
 
-resource "huaweicloud_vpc_route_table" "route_table_er" {
-  name    = "route_table_er"
-  vpc_id  = huaweicloud_vpc.cce-vpc.id
-  subnets = [huaweicloud_vpc_subnet.cce-subnet.id]
+# resource "huaweicloud_vpc_route_table" "route_table_er" {
+#   name    = "route_table_er"
+#   vpc_id  = huaweicloud_vpc.cce-vpc.id
+#   subnets = [huaweicloud_vpc_subnet.cce-subnet.id]
 
-  route {
-    destination = "172.16.0.0/12"
-    type        = "er"
-    nexthop     = "5bb5286e-38c7-456b-9918-412277905e4d"
-  }
-  route {
-    destination = "10.0.0.0/8"
-    type        = "er"
-    nexthop     = "5bb5286e-38c7-456b-9918-412277905e4d"
-  }
-  route {
-    destination = "192.168.0.0/16"
-    type        = "er"
-    nexthop     = "5bb5286e-38c7-456b-9918-412277905e4d"
-  }
-  route {
-    destination = "0.0.0.0/0"
-    type        = "er"
-    nexthop     = "5bb5286e-38c7-456b-9918-412277905e4d"
-  }
+#   route {
+#     destination = "172.16.0.0/12"
+#     type        = "er"
+#     nexthop     = "5bb5286e-38c7-456b-9918-412277905e4d"
+#   }
+#   route {
+#     destination = "10.0.0.0/8"
+#     type        = "er"
+#     nexthop     = "5bb5286e-38c7-456b-9918-412277905e4d"
+#   }
+#   route {
+#     destination = "192.168.0.0/16"
+#     type        = "er"
+#     nexthop     = "5bb5286e-38c7-456b-9918-412277905e4d"
+#   }
+#   route {
+#     destination = "0.0.0.0/0"
+#     type        = "er"
+#     nexthop     = "5bb5286e-38c7-456b-9918-412277905e4d"
+#   }
+# }
+
+resource "huaweicloud_vpc_route" "vpc_route_er" {
+  vpc_id         = huaweicloud_vpc.cce-vpc.id
+  # route_table_id = huaweicloud_vpc_route_table.route_table_er.id
+  destination    = "172.16.0.0/12"
+  type           = "er"
+  nexthop        = "5bb5286e-38c7-456b-9918-412277905e4d"
+}
+resource "huaweicloud_vpc_route" "vpc_route_er" {
+  vpc_id         = huaweicloud_vpc.cce-vpc.id
+  # route_table_id = huaweicloud_vpc_route_table.route_table_er.id
+  destination    = "10.0.0.0/8"
+  type           = "er"
+  nexthop        = "5bb5286e-38c7-456b-9918-412277905e4d"
+}
+resource "huaweicloud_vpc_route" "vpc_route_er" {
+  vpc_id         = huaweicloud_vpc.cce-vpc.id
+  # route_table_id = huaweicloud_vpc_route_table.route_table_er.id
+  destination    = "192.168.0.0/16"
+  type           = "er"
+  nexthop        = "5bb5286e-38c7-456b-9918-412277905e4d"
+}
+resource "huaweicloud_vpc_route" "vpc_route_er" {
+  vpc_id         = huaweicloud_vpc.cce-vpc.id
+  # route_table_id = huaweicloud_vpc_route_table.route_table_er.id
+  destination    = "0.0.0.0/0"
+  type           = "er"
+  nexthop        = "5bb5286e-38c7-456b-9918-412277905e4d"
 }
 
 # resource "huaweicloud_vpc_eip" "cce-nat-eip" {
