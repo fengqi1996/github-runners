@@ -19,6 +19,7 @@ jobs:
   create-cluster-admin-sa-token:
     name: Create Cluster Admin Service Account Token
     runs-on: debian
+    environment: ${{ github.event.inputs.environment }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
