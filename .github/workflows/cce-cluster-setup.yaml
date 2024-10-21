@@ -46,33 +46,33 @@ jobs:
         terraform init
         terraform workspace select -or-create ${{ env.ENVIRONMENT }} 
         TF_VAR_environment=${{ env.ENVIRONMENT}} TF_VAR_secret_key=${{ env.HW_SECRET_KEY }} TF_VAR_access_key=${{ env.HW_ACCESS_KEY }} TF_VAR_password=${{ env.PASSWORD }} TF_VAR_project_ID=${{ env.PROJECT_ID }} terraform plan
+    
+    # - name: Apply Terraform
+    #   working-directory: ${{ github.workspace }}/terraform
+    #   run: | 
+    #     TF_VAR_environment=$ENVIRONMENT TF_VAR_secret_key=$HW_SECRET_KEY TF_VAR_access_key=$HW_ACCESS_KEY TF_VAR_password=$PASSWORD TF_VAR_project_ID=$PROJECT_ID terraform apply --auto-approve
+    #     mkdir -p $HOME/.kube
+    #     export KUBECONFIG=$HOME/.kube/config
+    #     KUBE_CONFIG=$(terraform output -raw kube-config)
+    #     echo $KUBE_CONFIG > $HOME/.kube/config
+    #     kubectl config use-context external
+    #     kubectl get pods --all-namespaces
 
-    - name: Apply Terraform
-      working-directory: ${{ github.workspace }}/terraform
-      run: | 
-        TF_VAR_environment=$ENVIRONMENT TF_VAR_secret_key=$HW_SECRET_KEY TF_VAR_access_key=$HW_ACCESS_KEY TF_VAR_password=$PASSWORD TF_VAR_project_ID=$PROJECT_ID terraform apply --auto-approve
-        mkdir -p $HOME/.kube
-        export KUBECONFIG=$HOME/.kube/config
-        KUBE_CONFIG=$(terraform output -raw kube-config)
-        echo $KUBE_CONFIG > $HOME/.kube/config
-        kubectl config use-context external
-        kubectl get pods --all-namespaces
-
-    - name: Binding permission for team admin
-      run: | 
-        kubectl apply -f - <<EOF
-        apiVersion: rbac.authorization.k8s.io/v1
-        kind: ClusterRoleBinding
-        metadata:
-          annotations:
-            CCE.com/IAM: "true"
-          name: clusterrole_cluster-admin_user369a247a13464a27afa98544ef4aa96b # Agency Name
-        roleRef:
-          apiGroup: rbac.authorization.k8s.io
-          kind: ClusterRole
-          name: cluster-admin
-        subjects:
-        - apiGroup: rbac.authorization.k8s.io
-          kind: User
-          name: 369a247a13464a27afa98544ef4aa96b
+    # - name: Binding permission for team admin
+    #   run: | 
+    #     kubectl apply -f - <<EOF
+    #     apiVersion: rbac.authorization.k8s.io/v1
+    #     kind: ClusterRoleBinding
+    #     metadata:
+    #       annotations:
+    #         CCE.com/IAM: "true"
+    #       name: clusterrole_cluster-admin_user369a247a13464a27afa98544ef4aa96b # Agency Name
+    #     roleRef:
+    #       apiGroup: rbac.authorization.k8s.io
+    #       kind: ClusterRole
+    #       name: cluster-admin
+    #     subjects:
+    #     - apiGroup: rbac.authorization.k8s.io
+    #       kind: User
+    #       name: 369a247a13464a27afa98544ef4aa96b
         
