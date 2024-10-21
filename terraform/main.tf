@@ -47,15 +47,16 @@ terraform {
   }
 }
 
-resource "huaweicloud_enterprise_project" "itcp-microservice-staging" {
-  name        = "itcp-microservice-staging"
-  description = "Terraform ITCP Microservice Staging "
-}
+# resource "huaweicloud_enterprise_project" "itcp-microservice-staging" {
+#   name        = "itcp-microservice-staging"
+#   description = "Terraform ITCP Microservice Staging "
+#   type        = "poc"
+# }
 
 resource "huaweicloud_vpc" "cce-vpc" {
   name                  = "cce-vpc-${var.environment}-${random_string.random_suffix.result}"
   cidr                  = "10.144.134.0/24"
-  enterprise_project_id = huaweicloud_enterprise_project.itcp-microservice-staging.id
+  enterprise_project_id = "a57b0820-2a2b-4b14-8477-3518695cad25"
 }
 
 resource "huaweicloud_vpc_subnet" "cce-subnet" {
@@ -91,7 +92,7 @@ resource "huaweicloud_cce_cluster" "huawei-cce" {
   container_network_type = "overlay_l2"
   # eip                    = huaweicloud_vpc_eip.cce-control-plane-eip.address
   cluster_version        = "v1.28"
-  enterprise_project_id  = huaweicloud_enterprise_project.itcp-microservice-staging.id
+  enterprise_project_id  = "a57b0820-2a2b-4b14-8477-3518695cad25"
   masters {
     availability_zone = "ap-southeast-2a"
   }
@@ -180,7 +181,7 @@ resource "huaweicloud_cce_addon" "cie-collector" {
       jsondecode(data.huaweicloud_cce_addon_template.cie-collector.spec).parameters.custom,
       {
         cluster_id = huaweicloud_cce_cluster.huawei-cce.id
-        tenant_id  = huaweicloud_enterprise_project.itcp-microservice-staging.id
+        tenant_id  = "a57b0820-2a2b-4b14-8477-3518695cad25"
         retention  = "1d"
         enable_nodeAffinity=true
         shards = 2
