@@ -162,13 +162,13 @@ jobs:
         cat istio/istio-helm-ais/output/istio-helm-ais/templates/peerauthentication.yaml 
         kubectl apply -f istio/istio-helm-ais/output/istio-helm-ais/templates/peerauthentication.yaml 
 
-    - name: Helm Template
-      working-directory: ${{ github.workspace }}
-      run: |
-        helm template aistemplate --values aistemplate/environment/${{ env.PROJECT }}-${{ env.ENVIRONMENT }}.values.yaml --output-dir aistemplate/output
+    # - name: Helm Template
+    #   working-directory: ${{ github.workspace }}
+    #   run: |
+    #     helm template aistemplate --values aistemplate/environment/${{ env.PROJECT }}-${{ env.ENVIRONMENT }}.values.yaml --output-dir aistemplate/output
 
-    - name: Create SC and SA
-      working-directory: ${{ github.workspace }}
-      run: |
-        cat aistemplate/output/aistemplate/templates/project-rbac.yaml
-        kubectl apply -f aistemplate/output/aistemplate/templates/project-rbac.yaml
+    # - name: Create SC and SA
+    #   working-directory: ${{ github.workspace }}
+    #   run: |
+    #     cat aistemplate/output/aistemplate/templates/project-rbac.yaml
+    #     kubectl apply -f aistemplate/output/aistemplate/templates/project-rbac.yaml
