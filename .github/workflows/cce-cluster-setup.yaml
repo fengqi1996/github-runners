@@ -123,7 +123,7 @@ jobs:
 
     - name: Setup Cluster Secrets
       run: |
-        echo "${{ needs.terraform.outputs.kubeconfig }}" > $HOME/.kube/config
+        echo '${{ needs.terraform.outputs.kubeconfig }}' > $HOME/.kube/config
         kubectl get pods --all-namespaces
 
     - name: Helm Template
