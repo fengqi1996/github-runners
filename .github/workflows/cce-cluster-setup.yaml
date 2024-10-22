@@ -23,9 +23,11 @@ env:
 
 jobs:
   terraform:
-    name: 'Terraform Apply'
+    name: 'Cluster Initialization'
     runs-on: debian
     environment: ${{ github.event.inputs.environment }}
+    outputs:
+      kubeconfig: ${{ steps.apply.outputs.kubeconfig }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -49,8 +51,9 @@ jobs:
         terraform workspace select -or-create ${{ env.ENVIRONMENT }} 
         TF_VAR_environment=${{ env.ENVIRONMENT}} TF_VAR_secret_key=${{ env.HW_SECRET_KEY }} TF_VAR_access_key=${{ env.HW_ACCESS_KEY }} TF_VAR_password=${{ env.PASSWORD }} TF_VAR_project_ID=${{ env.PROJECT_ID }} terraform plan
 
-    - name: Apply Terraform
+    - name: Apply_Terraform
       working-directory: ${{ github.workspace }}/terraform
+      id: apply
       run: | 
         TF_VAR_environment=$ENVIRONMENT TF_VAR_secret_key=$HW_SECRET_KEY TF_VAR_access_key=$HW_ACCESS_KEY TF_VAR_password=$PASSWORD TF_VAR_project_ID=$PROJECT_ID terraform apply --auto-approve
         mkdir -p $HOME/.kube
@@ -59,7 +62,7 @@ jobs:
         echo $KUBE_CONFIG > $HOME/.kube/config
         # kubectl config use-context internal
         kubectl get pods --all-namespaces
-        echo "::set-output name=kubeconfig::$(base64 $HOME/.kube/config)"
+        echo "kubeconfig=$(base64 $HOME/.kube/config)" >> $GITHUB_OUTPUT
 
     - name: Binding permission for cluster role admin
       run: | 
@@ -117,7 +120,7 @@ jobs:
 
     - name: Setup Cluster Secrets
       run: |
-        echo "${{ needs.terraform.outputs.kubeconfig }}" | base64 -d > $HOME/.kube/config
+        echo "${{needs.terraform.outputs.kubeconfig}}" | base64 -d > $HOME/.kube/config
         kubectl get pods --all-namespaces
 
     - name: Helm Template
