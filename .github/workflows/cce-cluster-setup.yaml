@@ -55,7 +55,7 @@ jobs:
         export KUBECONFIG=$HOME/.kube/config
         KUBE_CONFIG=$(terraform output -raw kube-config)
         echo $KUBE_CONFIG > $HOME/.kube/config
-        kubectl config use-context external
+        kubectl config use-context internal
         kubectl get pods --all-namespaces
 
     - name: Binding permission for team admin
