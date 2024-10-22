@@ -12,9 +12,10 @@ on:
 
 env: 
   ENVIRONMENT: ${{ github.event.inputs.environment }}
-  KUBE_API_SERVER: ${{ secrets.KUBE_API_SERVER }}
-  KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}
-  KUBE_CA_CERT: ${{ secrets.KUBE_CA_CERT }}
+  # KUBE_API_SERVER: ${{ secrets.KUBE_API_SERVER }}
+  # KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}
+  # KUBE_CA_CERT: ${{ secrets.KUBE_CA_CERT }}
+  KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
   ALARM_URL: ${{ secrets.ALARM_URL }}
 
 jobs:
@@ -36,12 +37,13 @@ jobs:
     - name: Set up Kubeconfig
       run: |
         mkdir -p $HOME/.kube
-        echo "${{ env.KUBE_CA_CERT }}" > $HOME/.kube/ca.crt
-        kubectl config set-cluster k8s --server=${{ env.KUBE_API_SERVER }}  --certificate-authority=$HOME/.kube/ca.crt  --embed-certs=true --kubeconfig=$HOME/.kube/config
-        kubectl config set-credentials admin --token=${{ env.KUBE_TOKEN }} --kubeconfig=$HOME/.kube/config
-        kubectl config set-context k8s --cluster=k8s --user=admin --kubeconfig=$HOME/.kube/config
-        kubectl config use-context k8s --kubeconfig=$HOME/.kube/config
-        kubectl get pods --all-namespaces
+        echo "${{ env.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+        # echo "${{ env.KUBE_CA_CERT }}" > $HOME/.kube/ca.crt
+        # kubectl config set-cluster k8s --server=${{ env.KUBE_API_SERVER }}  --certificate-authority=$HOME/.kube/ca.crt  --embed-certs=true --kubeconfig=$HOME/.kube/config
+        # kubectl config set-credentials admin --token=${{ env.KUBE_TOKEN }} --kubeconfig=$HOME/.kube/config
+        # kubectl config set-context k8s --cluster=k8s --user=admin --kubeconfig=$HOME/.kube/config
+        # kubectl config use-context k8s --kubeconfig=$HOME/.kube/config
+        # kubectl get pods --all-namespaces
         kubectl version
 
     - name: Change Alarm URL in deployment
