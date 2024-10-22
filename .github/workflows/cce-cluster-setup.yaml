@@ -62,8 +62,10 @@ jobs:
         echo $KUBE_CONFIG > $HOME/.kube/config
         # kubectl config use-context internal
         kubectl get pods --all-namespaces
-        KUBE_CONFIG_BASE64=$(echo $KUBE_CONFIG | base64)
-        echo "kubeconfig=$KUBE_CONFIG_BASE64" >> $GITHUB_OUTPUT
+        # KUBE_CONFIG_BASE64=$(echo $KUBE_CONFIG | base64)
+        echo "kubeconfig<<EOF" >> $GITHUB_OUTPUT
+        cat $HOME/.kube/config >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
 
     - name: Binding permission for cluster role admin
       run: | 
@@ -121,7 +123,7 @@ jobs:
 
     - name: Setup Cluster Secrets
       run: |
-        echo "${{ needs.terraform.outputs.kubeconfig }}" | base64 --decode > $HOME/.kube/config
+        echo "${{ needs.terraform.outputs.kubeconfig }}" > $HOME/.kube/config
         kubectl get pods --all-namespaces
 
     - name: Helm Template
