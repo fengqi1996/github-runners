@@ -58,7 +58,7 @@ jobs:
         # kubectl config use-context internal
         kubectl get pods --all-namespaces
 
-    - name: Binding permission for team admin
+    - name: Binding permission for cluster role admin
       run: | 
         kubectl apply -f - <<EOF
         apiVersion: rbac.authorization.k8s.io/v1
@@ -75,4 +75,22 @@ jobs:
         - apiGroup: rbac.authorization.k8s.io
           kind: User
           name: 369a247a13464a27afa98544ef4aa96b
+
+    - name: Binding permission for team admin
+      run: | 
+        kubectl apply -f - <<EOF
+        apiVersion: rbac.authorization.k8s.io/v1
+        kind: ClusterRoleBinding
+        metadata:
+          annotations:
+            CCE.com/IAM: "true"
+          name: clusterrole_cluster-admin_user3a8a622c17f44cf88c539fae8366751f # Agency Name
+        roleRef:
+          apiGroup: rbac.authorization.k8s.io
+          kind: ClusterRole
+          name: cluster-admin
+        subjects:
+        - apiGroup: rbac.authorization.k8s.io
+          kind: User
+          name: 3a8a622c17f44cf88c539fae8366751f
         
