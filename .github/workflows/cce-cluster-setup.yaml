@@ -151,3 +151,34 @@ jobs:
         kubectl apply -f prometheus/prometheus-ais/output/prometheus-ais/templates/prometheus.yaml
         kubectl apply -f prometheus/prometheus-ais/output/prometheus-ais/templates/grafana-service.yaml
         kubectl rollout restart statefulset prometheus-server -n monitoring
+
+  project-initialize:
+    name: 'Project Initialization'
+    needs: cluster-common
+    runs-on: debian
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+        
+    - name: Set up Helm
+      uses: azure/setup-helm@v4.2.0
+      id: install
+
+    - name: Kubectl tool installer
+      uses: Azure/setup-kubectl@v4.0.0
+      with:
+        version: latest
+
+    - name: Install Istio Operator
+      run: |
+        helm install istio-operator istio-operator -n istio-operator --create-namespace || true
+
+    - name: Install Kiali Operator
+      run: |
+        helm upgrade --install \
+          --namespace istio-operator \
+          --create-namespace \
+          --version v1.89.0 \
+          kiali-operator \
+          kiali-operator
