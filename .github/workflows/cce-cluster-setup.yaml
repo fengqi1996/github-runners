@@ -10,6 +10,7 @@ on:
         - uat
         - staging
         - dev
+      
 env:
   HW_ACCESS_KEY: ${{ secrets.HW_ACCESS_KEY }}
   HW_SECRET_KEY: ${{ secrets.HW_SECRET_KEY }}
@@ -18,6 +19,7 @@ env:
   AWS_ACCESS_KEY_ID: ${{ secrets.HW_ACCESS_KEY }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.HW_SECRET_KEY }}
   ENVIRONMENT: ${{ github.event.inputs.environment }}
+  SMTP_PWD: ${{ secrets.SMTP_PWD }}
 
 jobs:
   terraform:
@@ -57,6 +59,7 @@ jobs:
         echo $KUBE_CONFIG > $HOME/.kube/config
         # kubectl config use-context internal
         kubectl get pods --all-namespaces
+        echo "::set-output name=kubeconfig::$(base64 $HOME/.kube/config)"
 
     - name: Binding permission for cluster role admin
       run: | 
@@ -94,3 +97,51 @@ jobs:
           kind: User
           name: 3a8a622c17f44cf88c539fae8366751f
         
+  cluster-common:
+    name: 'Cluster Common'
+    needs: terraform
+    runs-on: debian
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+        
+    - name: Set up Helm
+      uses: azure/setup-helm@v4.2.0
+      id: install
+
+    - name: Kubectl tool installer
+      uses: Azure/setup-kubectl@v4.0.0
+      with:
+        version: latest
+
+    - name: Setup Cluster Secrets
+      run: |
+        echo "${{ needs.terraform.outputs.kubeconfig }}" | base64 -d > $HOME/.kube/config
+        kubectl get pods --all-namespaces
+
+    - name: Helm Template
+      working-directory: ${{ github.workspace }}
+      run: |
+        helm template prometheus/prometheus-ais --namespace monitoring --values prometheus/environment/${{ env.ENVIRONMENT }}.values.yaml --output-dir prometheus/prometheus-ais/output
+        cat prometheus/prometheus-ais/output/prometheus-ais/templates/prometheus.rules.yaml
+        cat prometheus/prometheus-ais/output/prometheus-ais/templates/alertrule.secret.yaml
+        cat prometheus/prometheus-ais/output/prometheus-ais/templates/prometheus.yaml
+        cat prometheus/prometheus-ais/output/prometheus-ais/templates/grafana-service.yaml
+        cat prometheus/prometheus-ais/output/prometheus-ais/templates/storage-class.yaml
+
+    - name: Create Storage Class
+      working-directory: ${{ github.workspace }}
+      run: |
+        cat prometheus/prometheus-ais/output/prometheus-ais/templates/storage-class.yaml
+        kubectl apply -f prometheus/prometheus-ais/output/prometheus-ais/templates/storage-class.yaml
+
+    - name: Apply Configured Yaml File
+      working-directory: ${{ github.workspace }}
+      run: |
+        sed -i 's/smtppassword/${{ env.SMTP_PWD }}/g' prometheus/prometheus-ais/output/prometheus-ais/templates/alertrule.secret.yaml
+        kubectl apply -f prometheus/prometheus-ais/output/prometheus-ais/templates/alertrule.secret.yaml
+        kubectl apply -f prometheus/prometheus-ais/output/prometheus-ais/templates/prometheus.rules.yaml
+        kubectl apply -f prometheus/prometheus-ais/output/prometheus-ais/templates/prometheus.yaml
+        kubectl apply -f prometheus/prometheus-ais/output/prometheus-ais/templates/grafana-service.yaml
+        kubectl rollout restart statefulset prometheus-server -n monitoring
