@@ -13,15 +13,7 @@ on:
       project:
         type: choice
         options:
-        - myais
         - hw
-        - common
-      istioNamespace:
-        description: '<project>-istio-system / istio-system'
-        required: true
-      meshNamespace:
-        description: 'New namespace to add to the Istio mesh'
-        required: true
 
 env: 
   ENVIRONMENT: ${{ github.event.inputs.environment }}
