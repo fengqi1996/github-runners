@@ -227,7 +227,7 @@ resource "huaweicloud_vpc_eip" "dedicated" {
 
   bandwidth {
     share_type  = "PER"
-    name        = var.bandwidth_name
+    name        = "cce-elb-ingress-${var.environment}-bandwidth"
     size        = 5
     charge_mode = "traffic"
   }
