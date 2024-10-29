@@ -220,6 +220,35 @@ resource "huaweicloud_cce_addon" "cie-collector" {
   depends_on = [ huaweicloud_cce_node_pool.node_pool, huaweicloud_cce_node.cce-node ]
 }
 
+resource "huaweicloud_vpc_eip" "dedicated" {
+  publicip {
+    type = "5_bgp"
+  }
+
+  bandwidth {
+    share_type  = "PER"
+    name        = var.bandwidth_name
+    size        = 5
+    charge_mode = "traffic"
+  }
+}
+
+resource "huaweicloud_elb_loadbalancer" "cce-elb-ingress" {
+  name              = "cce-elb-ingress" 
+  description       = "Nginx Ingress Controller"
+  cross_vpc_backend = true
+
+  vpc_id         = huaweicloud_vpc.cce-vpc.id
+  ipv4_subnet_id = huaweicloud_vpc_subnet.cce-subnet.id
+  ipv4_eip_id    = huaweicloud_vpc_eip.dedicated.id
+
+  availability_zone = [
+    "ap-southeast-2a",
+    "ap-southeast-2b",
+  ]
+
+  enterprise_project_id = "a57b0820-2a2b-4b14-8477-3518695cad25"
+}
 data "huaweicloud_cce_addon_template" "nginx-ingress" {
   cluster_id = huaweicloud_cce_cluster.huawei-cce.id
   name       = "nginx-ingress"
@@ -237,14 +266,10 @@ resource "huaweicloud_cce_addon" "nginx-ingress" {
       {
         "service": {
           "annotations": {
-            "kubernetes.io/elb.class": "union"
-            # "kubernetes.io/elb.autocreate": {
-            #   "type":"public",
-            #   "bandwidth_name":"test-ingress-huawei",
-            #   "bandwidth_size":5,
-            #   "bandwidth_sharetype":"PER",
-            #   "eip_type":"5_bgp"
-            # }
+            "kubernetes.io/elb.class": "performance",
+            "kubernetes.io/elb.pass-through": "true"
+            "kubernetes.io/elb.id": huaweicloud_elb_loadbalancer.cce-elb-ingress.id
+            
           }
         }
       }
