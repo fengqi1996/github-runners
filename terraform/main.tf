@@ -239,7 +239,6 @@ resource "huaweicloud_elb_loadbalancer" "cce-elb-ingress" {
   cross_vpc_backend = true
 
   vpc_id         = huaweicloud_vpc.cce-vpc.id
-  ipv4_subnet_id = huaweicloud_vpc_subnet.cce-subnet.id
   ipv4_eip_id    = huaweicloud_vpc_eip.dedicated.id
 
   availability_zone = [
