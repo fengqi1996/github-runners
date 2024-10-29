@@ -238,13 +238,13 @@ resource "huaweicloud_cce_addon" "nginx-ingress" {
         "service": {
           "annotations": {
             "kubernetes.io/elb.class": "union"
-            "kubernetes.io/elb.autocreate": {
-              "type":"public",
-              "bandwidth_name":"test-ingress-huawei",
-              "bandwidth_size":5,
-              "bandwidth_sharetype":"PER",
-              "eip_type":"5_bgp"
-            }
+            # "kubernetes.io/elb.autocreate": {
+            #   "type":"public",
+            #   "bandwidth_name":"test-ingress-huawei",
+            #   "bandwidth_size":5,
+            #   "bandwidth_sharetype":"PER",
+            #   "eip_type":"5_bgp"
+            # }
           }
         }
       }
