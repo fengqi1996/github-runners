@@ -223,7 +223,7 @@ resource "huaweicloud_cce_addon" "cie-collector" {
 data "huaweicloud_cce_addon_template" "nginx-ingress" {
   cluster_id = huaweicloud_cce_cluster.huawei-cce.id
   name       = "nginx-ingress"
-  version    = var.addon_version
+  version    = "2.6.5"
 }
 
 resource "huaweicloud_cce_addon" "nginx-ingress" {
