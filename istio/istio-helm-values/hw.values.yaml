@@ -22,3 +22,4 @@ meshNamespaces:
 jaegerMemoryMaxTraces: 10000
 jaegerSamplingRate: 80.0
 # prometheusIngressHost: "hw-prometheus-staging.chanjinyeelengzai.xyz"
+jaegerIngressHost: "hw-jaeger-sit.chanjinyeelengzai.xyz"
