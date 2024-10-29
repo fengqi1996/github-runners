@@ -15,12 +15,16 @@ spec:
     spec:
       containers:
       - name: fastapi
-        image: swr.ap-southeast-2.myhuaweicloud.com/p00591690/fastapi:latest
+        image: swr.ap-southeast-2.myhuaweicloud.com/hw-poc/fastapi:latest
         ports:
         - containerPort: 80
         env:
         - name: FMGATEWAY_URL
           value: "<ALARM_URL>"
+        - name: RESTGW_USER
+          value: "<RESTGW_USER>"
+        - name: RESTGW_PWD
+          value: "<RESTGW_PWD>"
 ---
 apiVersion: v1
 kind: Service

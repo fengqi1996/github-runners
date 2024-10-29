@@ -123,16 +123,7 @@ def health_check():
 
 @app.post("/fmgateway")
 def webhook_fmgateway(alert_group: prometheus_alert_model.AlertGroup, request: Request, params: fm_query_model = Depends()):
-    print("Request Body")
-    print(request.body().__str__())
-    print("----------------------------------------------------------------------")
     params_as_dict = params.dict() 
-    print("Request Query Params")
-    print(params_as_dict.__str__())
-    print("----------------------------------------------------------------------")   
-    print("Alert Group")
-    print(alert_group.__str__())
-    print("----------------------------------------------------------------------")
     start_time = datetime.datetime.now()
     payloadFmGatewayList = []
     exceptionlist = []
@@ -160,45 +151,20 @@ def webhook_fmgateway(alert_group: prometheus_alert_model.AlertGroup, request: R
         try:
             ## get alert name 
             alert_name_val = alert.labels["alertname"]
-            print("alert_name_val")
-            print(alert_name_val)
             ## get severity level 
             severity_val = map_fmgateway_severity_level(alert.status, alert.labels["severity"])
-            print("severity_val")
-            print(severity_val)
             ## get additonal value from labels firsts, if labels is not exist get it from request parameter, standard value
             module_name_val = alert.labels["module_name"] if "module_name" in alert.labels.keys() else  params_as_dict["module_name"]
-            print("module_name_val")
-            print(module_name_val)
             amo_name_val = alert.labels["amo_name"] if "amo_name" in alert.labels.keys() else params_as_dict["amo_name"]
-            print("amo_name_val")
-            print(amo_name_val)
             mc_zone_val = alert.labels["mc_zone"] if "mc_zone" in alert.labels.keys() else params_as_dict["mc_zone"]
-            print("mc_zone_val")
-            print(mc_zone_val)
             node_val = alert.labels["node"] if "node" in alert.labels.keys() else params_as_dict["node"]
-            print("node_val")
-            print(node_val)
             system_name_val = alert.labels["system_name"] if "system_name" in alert.labels.keys() else params_as_dict["system_name"]
-            print("system_name_val")
-            print(system_name_val)
             ems_name_val = alert.labels["ems_name"] if "ems_name" in alert.labels.keys() else params_as_dict["ems_name"]
-            print(ems_name_val)
             ems_ip_val = alert.labels["ems_ip"] if "ems_ip" in alert.labels.keys() else params_as_dict["ems_ip"]
-            print("ems_ip_val")
-            print(ems_ip_val)
             site_code_val = alert.labels["site_code"] if "site_code" in alert.labels.keys() else params_as_dict["site_code"]
-            print("site_code_val")
-            print(site_code_val)
             region_val = alert.labels["region"] if "region" in alert.labels.keys() else params_as_dict["region"]
-            print("region_val")
-            print(region_val)
             node_ip_val = alert.labels["node_ip"] if "node_ip" in alert.labels.keys() else params_as_dict["node_ip"]
-            print("node_ip_val")
-            print(node_ip_val)
             network_type_val = alert.labels["network_type"] if "network_type" in alert.labels.keys() else params_as_dict["network_type"]
-            print("network_type_val")
-            print(network_type_val)
             ## form a namespace value and for attaching to the description field
             namespace_val = "namespace: {}".format(alert.labels["namespace"]) if "namespace" in alert.labels.keys() else ""   
                     
@@ -234,8 +200,6 @@ def webhook_fmgateway(alert_group: prometheus_alert_model.AlertGroup, request: R
                 description_val += "{}, ".format(alert_time_stamp)
 
             description_val = description_val[0:-2]
-            print("Description Value")
-            print(description_val)
             payloadFmGateway = {
                     "module": module_name_val,
                     "amoName": amo_name_val,
@@ -252,11 +216,15 @@ def webhook_fmgateway(alert_group: prometheus_alert_model.AlertGroup, request: R
                     "nodeIp": node_ip_val,
                     "networkType": network_type_val
                 }
-
+            headers = {
+                "Accept": "application/json",
+                "Content-type": "application/json"
+            }
+            auth = requests.auth.HTTPBasicAuth(os.getenv("RESTGW_USER"), os.getenv("RESTGW_PWD"))
             try:    
                 print("PayLoad FMGateway")
                 print(payloadFmGateway)
-                resp = requests.post(config["FMGATEWAY_URL"] , json=payloadFmGateway, timeout=config["FMGATEWAY_REQUEST_TIMEOUT"], verify=config["FMGATEWAY_SSL_VERIFY"]) 
+                resp = requests.post(config["FMGATEWAY_URL"], auth=auth, json=payloadFmGateway, timeout=config["FMGATEWAY_REQUEST_TIMEOUT"], verify=config["FMGATEWAY_SSL_VERIFY"], headers=headers) 
                 resp.raise_for_status()
                 response_message = str(json.loads(resp.text))
                 payloadFmGatewayList.append(payloadFmGateway)
