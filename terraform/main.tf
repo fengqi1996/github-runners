@@ -265,7 +265,7 @@ resource "huaweicloud_cce_addon" "nginx-ingress" {
       {
         "service": {
           "annotations": {
-            "kubernetes.io/elb.class": "performance",
+            "kubernetes.io/elb.class": "union",
             "kubernetes.io/elb.pass-through": "true"
             "kubernetes.io/elb.id": huaweicloud_elb_loadbalancer.cce-elb-ingress.id
             
