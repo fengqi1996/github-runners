@@ -25,6 +25,21 @@ variable "obs-bucket" {
   default = "lts-bucket-ais"
 }
 
+variable "lts-group" {
+  type = string
+  default = "lts-group-ais"
+}
+
+variable "vpc-cidr" {
+  type = string
+  default = "10.144.134.0/24"
+}
+
+variable "vpc-subnet-cidr" {
+  type = string
+  default = "10.144.134.0/24"
+}
+
 provider "huaweicloud" {
   region     = var.availability_zone
   access_key = var.access_key
@@ -55,13 +70,13 @@ terraform {
 
 resource "huaweicloud_vpc" "cce-vpc" {
   name                  = "cce-vpc-${var.environment}-${random_string.random_suffix.result}"
-  cidr                  = "10.144.134.0/24"
+  cidr                  = var.vpc-cidr
   enterprise_project_id = "a57b0820-2a2b-4b14-8477-3518695cad25"
 }
 
 resource "huaweicloud_vpc_subnet" "cce-subnet" {
   name       = "cce-subnet"
-  cidr       = "10.144.134.0/24"
+  cidr       = var.vpc-subnet-cidr
   gateway_ip = "10.144.134.1"
   vpc_id        = huaweicloud_vpc.cce-vpc.id
 }
@@ -205,6 +220,53 @@ resource "huaweicloud_cce_addon" "cie-collector" {
   depends_on = [ huaweicloud_cce_node_pool.node_pool, huaweicloud_cce_node.cce-node ]
 }
 
+data "huaweicloud_cce_addon_template" "nginx-ingress" {
+  cluster_id = huaweicloud_cce_cluster.huawei-cce.id
+  name       = "nginx-ingress"
+  version    = var.addon_version
+}
+
+resource "huaweicloud_cce_addon" "nginx-ingress" {
+  cluster_id    = huaweicloud_cce_cluster.huawei-cce.id
+  template_name = "nginx-ingress"
+  # version       = var.addon_version
+  values {
+    # basic_json  = jsonencode(jsondecode(data.huaweicloud_cce_addon_template.nginx-ingress.spec).basic)
+    custom_json = jsonencode(merge(
+      jsondecode(data.huaweicloud_cce_addon_template.nginx-ingress.spec).parameters.custom,
+      {
+        "service": {
+          "annotations": {
+            "kubernetes.io/elb.class": "union"
+            "kubernetes.io/elb.autocreate": {
+              "type":"public",
+              "bandwidth_name":"test-ingress-huawei",
+              "bandwidth_size":5,
+              "bandwidth_sharetype":"PER",
+              "eip_type":"5_bgp"
+            }
+          }
+        }
+      }
+    ))
+    flavor_json = jsonencode(merge(
+      jsondecode(data.huaweicloud_cce_addon_template.nginx-ingress.spec).parameters.flavor1,
+      {
+        "resources": [
+          {
+            "limitsCpu": "8000m",
+            "limitsMem": "4000Mi",
+            "name": "nginx-ingress",
+            "requestsCpu": "100m",
+            "requestsMem": "100Mi"
+          }
+        ]
+      })
+    )
+  }
+  depends_on = [ huaweicloud_cce_node_pool.node_pool, huaweicloud_cce_node.cce-node ]
+}
+
 resource "huaweicloud_cce_addon" "grafana" {
   cluster_id    = huaweicloud_cce_cluster.huawei-cce.id
   template_name = "grafana"
@@ -212,7 +274,7 @@ resource "huaweicloud_cce_addon" "grafana" {
 }
 
 resource "huaweicloud_lts_group" "lts-logs-group" {
-  group_name  = "lts-logs-group"
+  group_name  = var.lts-group
   ttl_in_days = 20
   region      = var.availability_zone
 }
@@ -409,4 +471,8 @@ output "kube-config" {
 
 output "lts-logs-group" {
   value = huaweicloud_lts_group.lts-logs-group.id
+}
+
+output "obs-bucket" {
+  value = var.obs-bucket
 }

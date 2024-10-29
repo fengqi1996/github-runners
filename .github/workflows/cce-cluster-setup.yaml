@@ -9,6 +9,7 @@ on:
         options: 
         - uat
         - staging
+        - sit
         - dev
       teamAdmin:
         description: 'Team Admin ID'
@@ -24,7 +25,7 @@ env:
   AWS_SECRET_ACCESS_KEY: ${{ secrets.HW_SECRET_KEY }}
   ENVIRONMENT: ${{ github.event.inputs.environment }}
   SMTP_PWD: ${{ secrets.SMTP_PWD }}
-  TEAM_ADMIN: ${{ github.event.inputs.teamAdmin }}
+  TEAM_ADMIN: ${{ github.event.inputs.teamAdmin }} # 3a8a622c17f44cf88c539fae8366751f
 
 jobs:
   terraform:
@@ -54,13 +55,13 @@ jobs:
       run: |
         terraform init
         terraform workspace select -or-create ${{ env.ENVIRONMENT }} 
-        TF_VAR_environment=${{ env.ENVIRONMENT}} TF_VAR_secret_key=${{ env.HW_SECRET_KEY }} TF_VAR_access_key=${{ env.HW_ACCESS_KEY }} TF_VAR_password=${{ env.PASSWORD }} TF_VAR_project_ID=${{ env.PROJECT_ID }} terraform plan
+        TF_VAR_environment=${{ env.ENVIRONMENT}} TF_VAR_secret_key=${{ env.HW_SECRET_KEY }} TF_VAR_access_key=${{ env.HW_ACCESS_KEY }} TF_VAR_password=${{ env.PASSWORD }} TF_VAR_project_ID=${{ env.PROJECT_ID }} terraform plan -var-file="./environment/${{ env.ENVIRONMENT }}/values.tfvars"
 
     - name: Apply_Terraform
       working-directory: ${{ github.workspace }}/terraform
       id: apply
       run: | 
-        TF_VAR_environment=$ENVIRONMENT TF_VAR_secret_key=$HW_SECRET_KEY TF_VAR_access_key=$HW_ACCESS_KEY TF_VAR_password=$PASSWORD TF_VAR_project_ID=$PROJECT_ID terraform apply --auto-approve
+        TF_VAR_environment=$ENVIRONMENT TF_VAR_secret_key=$HW_SECRET_KEY TF_VAR_access_key=$HW_ACCESS_KEY TF_VAR_password=$PASSWORD TF_VAR_project_ID=$PROJECT_ID terraform apply --auto-approve -var-file="./environment/${{ env.ENVIRONMENT }}/values.tfvars"
         mkdir -p $HOME/.kube
         export KUBECONFIG=$HOME/.kube/config
         KUBE_CONFIG=$(terraform output -raw kube-config)
