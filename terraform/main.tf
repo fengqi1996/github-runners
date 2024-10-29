@@ -231,7 +231,7 @@ resource "huaweicloud_cce_addon" "nginx-ingress" {
   template_name = "nginx-ingress"
   # version       = var.addon_version
   values {
-    # basic_json  = jsonencode(jsondecode(data.huaweicloud_cce_addon_template.nginx-ingress.spec).basic)
+    basic_json  = jsonencode(jsondecode(data.huaweicloud_cce_addon_template.nginx-ingress.spec).basic)
     custom_json = jsonencode(merge(
       jsondecode(data.huaweicloud_cce_addon_template.nginx-ingress.spec).parameters.custom,
       {
