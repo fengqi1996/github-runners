@@ -4,10 +4,10 @@ istioIngressservice:
   ports:
     - name: http2
       port: 80
-      targetPort: 80
+      targetPort: 8080
     - name: https
       port: 443
-      targetPort: 443
+      targetPort: 8443
 istioIngressserviceAnnotations:
   kubernetes.io/elb.class: "union"
   kubernetes.io/elb.autocreate: '{
@@ -21,3 +21,4 @@ meshNamespaces:
   - hw-microservice-1
 jaegerMemoryMaxTraces: 10000
 jaegerSamplingRate: 80.0
+# prometheusIngressHost: "hw-prometheus-staging.chanjinyeelengzai.xyz"
