@@ -10,6 +10,10 @@ on:
         - uat
         - staging
         - dev
+      teamAdmin:
+        description: 'Team Admin ID'
+        required: true
+        type: string
       
 env:
   HW_ACCESS_KEY: ${{ secrets.HW_ACCESS_KEY }}
@@ -20,6 +24,7 @@ env:
   AWS_SECRET_ACCESS_KEY: ${{ secrets.HW_SECRET_KEY }}
   ENVIRONMENT: ${{ github.event.inputs.environment }}
   SMTP_PWD: ${{ secrets.SMTP_PWD }}
+  TEAM_ADMIN: ${{ github.event.inputs.teamAdmin }}
 
 jobs:
   terraform:
@@ -93,7 +98,7 @@ jobs:
         metadata:
           annotations:
             CCE.com/IAM: "true"
-          name: clusterrole_cluster-admin_user3a8a622c17f44cf88c539fae8366751f # Agency Name
+          name: clusterrole_cluster-admin_user${{ env.TEAM_ADMIN }} # Agency Name
         roleRef:
           apiGroup: rbac.authorization.k8s.io
           kind: ClusterRole
@@ -101,7 +106,7 @@ jobs:
         subjects:
         - apiGroup: rbac.authorization.k8s.io
           kind: User
-          name: 3a8a622c17f44cf88c539fae8366751f
+          name: ${{ env.TEAM_ADMIN }}
         
   cluster-common:
     name: 'Cluster Common'
