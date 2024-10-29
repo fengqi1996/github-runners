@@ -24,6 +24,7 @@ env:
   # KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}
   # KUBE_CA_CERT: ${{ secrets.KUBE_CA_CERT }}
   KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+  istioNamespace: istio-system
 
 jobs:
   deploy_istio:
@@ -57,6 +58,26 @@ jobs:
     - name: Install Istio Operator
       run: |
         helm install istio-operator istio-operator -n istio-operator --create-namespace || true
+
+    - name: Refine Watch Namespace For Istio Operator
+      run: |
+        current_namespaces=$(helm get values istio-operator -n istio-operator --output json | jq -r '.watchedNamespaces')
+        echo "Current namespaces: $current_namespaces"
+        new_namespaces="$current_namespaces,${{ env.istioNamespace }}"
+        echo "New namespaces: $new_namespaces"
+        # Remove Duplicate Namespaces
+        updated_namespaces=$(echo $new_namespaces | tr ',' '\n' | sort | uniq | paste -sd, -)
+        echo "Updated namespaces: $updated_namespaces"
+        # Pass updated_namespaces to helm upgrade command step
+        echo "::set-output name=updated_namespaces::$updated_namespaces"
+    
+    - name: Upgrade Helm release with new watchedNamespaces
+      run: |
+        echo "Updated Namespaces: ${{ steps.update_namespaces.outputs.updated_namespaces }}"
+        helm upgrade --install istio-operator istio-operator -n istio-operator --create-namespace \
+          --set watchedNamespaces="${{ steps.update_namespaces.outputs.updated_namespaces }}"
+        current_namespaces=$(helm get values istio-operator -n istio-operator --output json | jq -r '.watchedNamespaces')
+        echo "Current namespaces: $current_namespaces"
 
     - name: Install Kiali Operator
       run: |
