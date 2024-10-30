@@ -1,0 +1,124 @@
+# README: Need to create csi-disk-ssd storage class first. 
+prometheus:
+  prometheusSpec:
+    resources: # .Values.prometheus.prometheusSpec.resources 
+      limits:
+        cpu: "1"
+        memory: 8Gi
+      requests:
+        cpu: 500m
+        memory: 0.5Gi
+    retention: "6h" # .Values.prometheus.prometheusSpec.retention | quote
+    replicas: 2 # .Values.prometheus.prometheusSpec.replicas
+    scrapeInterval: "20s" # .Values.prometheus.prometheusSpec.scrapeInterval
+    scrapeTimeout: "10s" # .Values.prometheus.prometheusSpec.scrapeTimeout
+    shards: 2 # .Values.prometheus.prometheusSpec.shards
+    storageSpec: 
+      volumeClaimTemplate:
+        metadata:
+          annotations:
+            everest.io/disk-volume-type: SSD
+          labels:
+            app: prometheus
+          name: pvc
+        spec:
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: 30Gi
+          storageClassName: csi-disk-ssd
+    thanos:
+      resources: # .Values.prometheus.prometheusSpec.thanos.resources
+        limits:
+          cpu: "1"
+          memory: 4Gi
+        requests:
+          cpu: 500m
+          memory: 0.5Gi
+
+prometheusRule:
+- name: CCEKubeNodeNotReady
+  rules:
+  - alert: CCEKubeNodeNotReady
+    annotations:
+      message: '{{ $labels.node }} has been unready for more than 15 minutes.'
+      runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubenodenotready
+    expr: |
+      kube_node_status_condition{job="kube-state-metrics",condition="Ready",status="true"} == 0
+    for: 30s
+    labels:
+      notification_channel: fmgateway
+      namespace: '{{ $labels.namespace }}'
+      prometheus: openshift-monitoring/k8s
+      severity: warning
+      amo_name: amo_name_test
+      node: 'Node-{{ $labels.node }}'
+      system_name: 'Huawei cce'
+      ems_name: ems-name-test
+      ems_ip: 10.144.133.221
+      site_code: site-code-test
+      node_ip: 'node-ip-test'
+      network_type: 'IT'
+- name: test-rule-ais
+  rules:
+  - alert: NodeUnschedulable
+    expr: kube_node_spec_unschedulable == 1
+    for: 20s
+    labels:
+      severity: critical
+    annotations:
+      summary: "Node {{ $labels.node }} is unschedulable"
+      description: "Node {{ $labels.node }} has been unschedulable for more than 5 minutes."
+    labels:
+      notification_channel: fmgateway
+      namespace: '{{ $labels.namespace }}'
+      prometheus: cce/k8s
+      severity: warning
+      amo_name: amo_name_test
+      node: 'Node-{{ $labels.node }}'
+      system_name: 'Huawei cce'
+      ems_name: ems-name-test
+      ems_ip: 10.144.133.221
+      site_code: site-code-test
+      node_ip: '{{ $labels.node }}'
+      network_type: 'IT'
+alertmanagerConfig:
+  global:
+    smtp_smarthost: 'smtp.gmail.com:587'
+    smtp_from: 'chan1992241@gmail.com'
+    smtp_auth_username: 'chan1992241@gmail.com'
+    smtp_auth_password: smtppassword
+    smtp_require_tls: true
+    resolve_timeout: 1m
+
+  route:
+    receiver: 'email-and-webhook'
+
+  receivers:
+    - name: 'gmail-notifications'
+      email_configs:
+      - to: chan1992241@gmail.com
+        from: chan1992241@gmail.com
+        smarthost: smtp.gmail.com:587
+        auth_username: chan1992241@gmail.com
+        auth_identity: chan1992241@gmail.com
+        auth_password: smtppassword
+        send_resolved: true
+    - name: 'null'
+    - name: FMGateway
+      webhook_configs:
+        - url: >-
+            http://istio-ingressgateway.istio-system.svc.cluster.local:80/fmgateway?amo_name=sub-AROTest-az-dev&system_name=ocp&ems_name=sub-AROTest-az-dev&ems_ip=10.84.46.132&site_code=sub-AROTest-az-dev&network_type=IT
+    - name: 'email-and-webhook'
+      email_configs:
+        - to: chan1992241@gmail.com
+          from: chan1992241@gmail.com
+          smarthost: smtp.gmail.com:587
+          auth_username: chan1992241@gmail.com
+          auth_identity: chan1992241@gmail.com
+          auth_password: smtppassword
+          send_resolved: true
+      webhook_configs:
+        - url: >-
+            http://istio-ingressgateway.istio-system.svc.cluster.local:80/fmgateway?amo_name=sub-AROTest-az-dev&system_name=ocp&ems_name=sub-AROTest-az-dev&ems_ip=10.84.46.132&site_code=sub-AROTest-az-dev&network_type=IT
