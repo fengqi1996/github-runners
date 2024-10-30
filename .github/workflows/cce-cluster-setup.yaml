@@ -159,14 +159,14 @@ jobs:
         kubectl rollout restart statefulset prometheus-server -n monitoring
 
         
-    - name: Set up Helm
-      uses: azure/setup-helm@v4.2.0
-      id: install
+    # - name: Set up Helm
+    #   uses: azure/setup-helm@v4.2.0
+    #   id: install
 
-    - name: Kubectl tool installer
-      uses: Azure/setup-kubectl@v4.0.0
-      with:
-        version: latest
+    # - name: Kubectl tool installer
+    #   uses: Azure/setup-kubectl@v4.0.0
+      # with:
+      #   version: latest
         
     - name: Install Istio Operator
       run: |
