@@ -163,6 +163,11 @@ jobs:
     - name: Peerauthentication
       run: |
         cat istio/istio-helm-ais/output/istio-helm-ais/templates/peerauthentication.yaml 
+        for i in {1..10}; do
+          sleep 2
+          kubectl get crd peerauthentications.security.istio.io && break
+          echo "Waiting for PeerAuthentication CRD to be ready..."
+        done
         kubectl apply -f istio/istio-helm-ais/output/istio-helm-ais/templates/peerauthentication.yaml 
 
     # - name: Helm Template
