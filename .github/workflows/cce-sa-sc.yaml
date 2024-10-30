@@ -11,6 +11,7 @@ on:
         - uat
         - staging
         - dev
+        - sit
       project:
         type: choice
         options:
