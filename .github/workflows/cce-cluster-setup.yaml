@@ -184,7 +184,7 @@ jobs:
       run: |
         mkdir -p $HOME/.kube
         export KUBECONFIG=$HOME/.kube/config
-        echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+        echo '${{ needs.terraform.outputs.kubeconfig }}' > $HOME/.kube/config
         # echo "${{ env.KUBE_CA_CERT }}" > $HOME/.kube/ca.crt
         # kubectl config set-cluster k8s --server=${{ env.KUBE_API_SERVER }}  --certificate-authority=$HOME/.kube/ca.crt  --embed-certs=true --kubeconfig=$HOME/.kube/config
         # kubectl config set-credentials admin --token=${{ env.KUBE_TOKEN }} --kubeconfig=$HOME/.kube/config
