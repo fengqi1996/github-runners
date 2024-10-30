@@ -180,18 +180,10 @@ jobs:
       run: |
         helm install istio-operator istio-operator -n istio-operator --create-namespace || true
 
-    - name: Set up Kubeconfig
+    - name: Setup Cluster Secrets
       run: |
-        mkdir -p $HOME/.kube
-        export KUBECONFIG=$HOME/.kube/config
-        printf '%s' "${{ needs.terraform.outputs.kubeconfig }}" > $HOME/.kube/config
-        # echo "${{ env.KUBE_CA_CERT }}" > $HOME/.kube/ca.crt
-        # kubectl config set-cluster k8s --server=${{ env.KUBE_API_SERVER }}  --certificate-authority=$HOME/.kube/ca.crt  --embed-certs=true --kubeconfig=$HOME/.kube/config
-        # kubectl config set-credentials admin --token=${{ env.KUBE_TOKEN }} --kubeconfig=$HOME/.kube/config
-        # kubectl config set-context k8s --cluster=k8s --user=admin --kubeconfig=$HOME/.kube/config
-        # kubectl config use-context k8s --kubeconfig=$HOME/.kube/config
-        # kubectl get pods --all-namespaces
-        kubectl version  
+        echo '${{ needs.terraform.outputs.kubeconfig }}' > $HOME/.kube/config
+        kubectl get pods --all-namespaces
              
     - name: Install Istio Operator
       run: |
