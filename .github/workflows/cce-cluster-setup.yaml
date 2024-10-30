@@ -175,15 +175,24 @@ jobs:
       uses: Azure/setup-kubectl@v4.0.0
       with:
         version: latest
+        
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
 
-    - name: Install Istio Operator
+    - name: Plan Terraform
+      working-directory: ${{ github.workspace }}/terraform
+      id: plan
       run: |
-        helm install istio-operator istio-operator -n istio-operator --create-namespace || true
+        terraform init
+        terraform workspace select -or-create ${{ env.ENVIRONMENT }} 
 
     - name: Setup Cluster Secrets
       run: |
-        echo '${{ needs.terraform.outputs.kubeconfig }}' > $HOME/.kube/config
-        kubectl get pods --all-namespaces
+        # echo '${{ needs.terraform.outputs.kubeconfig }}' > $HOME/.kube/config
+        # kubectl get pods --all-namespaces
+        export KUBECONFIG=$HOME/.kube/config
+        KUBE_CONFIG=$(terraform output -raw kube-config)
+        echo $KUBE_CONFIG > $HOME/.kube/config
              
     - name: Install Istio Operator
       run: |
