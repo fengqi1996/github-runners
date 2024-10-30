@@ -32,6 +32,7 @@ env:
   # KUBE_API_SERVER: ${{ secrets.KUBE_API_SERVER }}
   # KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}
   # KUBE_CA_CERT: ${{ secrets.KUBE_CA_CERT }}
+  JAEGER_BASIC_AUTH: ${{ secrets.JAEGER_BASIC_AUTH }}
   KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
 
 jobs:
