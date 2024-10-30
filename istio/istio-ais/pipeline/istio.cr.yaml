@@ -7,6 +7,7 @@ spec:
   profile: default
   revision: <mesh-name>
   meshConfig:
+    accessLogFile: /dev/stdout
     discoverySelectors:
       - matchLabels:
           usergroup: <mesh-name>
