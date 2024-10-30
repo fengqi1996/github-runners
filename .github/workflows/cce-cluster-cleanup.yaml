@@ -10,6 +10,7 @@ on:
         - uat
         - staging
         - dev
+        - sit
         
 env:
   HW_ACCESS_KEY: ${{ secrets.HW_ACCESS_KEY }}
