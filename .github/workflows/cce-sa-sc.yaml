@@ -43,16 +43,17 @@ jobs:
       run: |
         mkdir -p $HOME/.kube
         export KUBECONFIG=$HOME/.kube/config
-        if [[ "${{ github.event.inputs.environment }}" == "uat" ]]; then
-          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
-        elif [[ "${{ github.event.inputs.environment }}" == "staging" ]]; then
-          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
-        elif [[ "${{ github.event.inputs.environment }}" == "dev" ]]; then
-          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
-        else
-          echo "Invalid environment selection"
-          exit 1
-        fi
+        echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+        # if [[ "${{ github.event.inputs.environment }}" == "uat" ]]; then
+        #   echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+        # elif [[ "${{ github.event.inputs.environment }}" == "staging" ]]; then
+        #   echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+        # elif [[ "${{ github.event.inputs.environment }}" == "dev" ]]; then
+        #   echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+        # else
+        #   echo "Invalid environment selection"
+        #   exit 1
+        # fi
         kubectl version
 
     - name: Helm Template
