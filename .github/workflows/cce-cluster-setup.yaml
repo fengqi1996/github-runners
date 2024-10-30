@@ -158,71 +158,71 @@ jobs:
         kubectl apply -f prometheus/prometheus-ais/output/prometheus-ais/templates/grafana-service.yaml
         kubectl rollout restart statefulset prometheus-server -n monitoring
 
-  project-initialize:
-    name: 'Project Initialization'
-    needs: cluster-common
-    runs-on: debian
-    environment: ${{ github.event.inputs.environment }}
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+  # project-initialize:
+  #   name: 'Project Initialization'
+  #   needs: cluster-common
+  #   runs-on: debian
+  #   environment: ${{ github.event.inputs.environment }}
+  #   steps:
+  #   - name: Checkout repository
+  #     uses: actions/checkout@v4
         
-    - name: Set up Helm
-      uses: azure/setup-helm@v4.2.0
-      id: install
+  #   - name: Set up Helm
+  #     uses: azure/setup-helm@v4.2.0
+  #     id: install
 
-    - name: Kubectl tool installer
-      uses: Azure/setup-kubectl@v4.0.0
-      with:
-        version: latest
+  #   - name: Kubectl tool installer
+  #     uses: Azure/setup-kubectl@v4.0.0
+  #     with:
+  #       version: latest
         
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v3
+  #   - name: Setup Terraform
+  #     uses: hashicorp/setup-terraform@v3
 
-    - name: Plan Terraform
-      working-directory: ${{ github.workspace }}/terraform
-      id: plan
-      run: |
-        terraform init
-        terraform workspace select -or-create ${{ env.ENVIRONMENT }} 
+  #   - name: Plan Terraform
+  #     working-directory: ${{ github.workspace }}/terraform
+  #     id: plan
+  #     run: |
+  #       terraform init
+  #       terraform workspace select -or-create ${{ env.ENVIRONMENT }} 
 
-    - name: Setup Cluster Secrets
-      run: |
-        # echo '${{ needs.terraform.outputs.kubeconfig }}' > $HOME/.kube/config
-        # kubectl get pods --all-namespaces
-        export KUBECONFIG=$HOME/.kube/config
-        KUBE_CONFIG=$(terraform output -raw kube-config)
-        echo $KUBE_CONFIG > $HOME/.kube/config
+  #   - name: Setup Cluster Secrets
+  #     run: |
+  #       # echo '${{ needs.terraform.outputs.kubeconfig }}' > $HOME/.kube/config
+  #       # kubectl get pods --all-namespaces
+  #       export KUBECONFIG=$HOME/.kube/config
+  #       KUBE_CONFIG=$(terraform output -raw kube-config)
+  #       echo $KUBE_CONFIG > $HOME/.kube/config
              
-    - name: Install Istio Operator
-      run: |
-        helm install istio-operator istio-operator -n istio-operator --create-namespace || true
+  #   - name: Install Istio Operator
+  #     run: |
+  #       helm install istio-operator istio-operator -n istio-operator --create-namespace || true
 
-    - name: Refine Watch Namespace For Istio Operator
-      run: |
-        current_namespaces=$(helm get values istio-operator -n istio-operator --output json | jq -r '.watchedNamespaces')
-        echo "Current namespaces: $current_namespaces"
-        new_namespaces="$current_namespaces,${{ env.istioNamespace }}"
-        echo "New namespaces: $new_namespaces"
-        # Remove Duplicate Namespaces
-        updated_namespaces=$(echo $new_namespaces | tr ',' '\n' | sort | uniq | paste -sd, -)
-        echo "Updated namespaces: $updated_namespaces"
-        # Pass updated_namespaces to helm upgrade command step
-        echo "::set-output name=updated_namespaces::$updated_namespaces"
+  #   - name: Refine Watch Namespace For Istio Operator
+  #     run: |
+  #       current_namespaces=$(helm get values istio-operator -n istio-operator --output json | jq -r '.watchedNamespaces')
+  #       echo "Current namespaces: $current_namespaces"
+  #       new_namespaces="$current_namespaces,${{ env.istioNamespace }}"
+  #       echo "New namespaces: $new_namespaces"
+  #       # Remove Duplicate Namespaces
+  #       updated_namespaces=$(echo $new_namespaces | tr ',' '\n' | sort | uniq | paste -sd, -)
+  #       echo "Updated namespaces: $updated_namespaces"
+  #       # Pass updated_namespaces to helm upgrade command step
+  #       echo "::set-output name=updated_namespaces::$updated_namespaces"
     
-    - name: Upgrade Helm release with new watchedNamespaces
-      run: |
-        echo "Updated Namespaces: ${{ steps.update_namespaces.outputs.updated_namespaces }}"
-        helm upgrade --install istio-operator istio-operator -n istio-operator --create-namespace \
-          --set watchedNamespaces="${{ steps.update_namespaces.outputs.updated_namespaces }}"
-        current_namespaces=$(helm get values istio-operator -n istio-operator --output json | jq -r '.watchedNamespaces')
-        echo "Current namespaces: $current_namespaces"
+  #   - name: Upgrade Helm release with new watchedNamespaces
+  #     run: |
+  #       echo "Updated Namespaces: ${{ steps.update_namespaces.outputs.updated_namespaces }}"
+  #       helm upgrade --install istio-operator istio-operator -n istio-operator --create-namespace \
+  #         --set watchedNamespaces="${{ steps.update_namespaces.outputs.updated_namespaces }}"
+  #       current_namespaces=$(helm get values istio-operator -n istio-operator --output json | jq -r '.watchedNamespaces')
+  #       echo "Current namespaces: $current_namespaces"
 
-    - name: Install Kiali Operator
-      run: |
-        helm upgrade --install \
-          --namespace istio-operator \
-          --create-namespace \
-          --version v1.89.0 \
-          kiali-operator \
-          kiali-operator
+  #   - name: Install Kiali Operator
+  #     run: |
+  #       helm upgrade --install \
+  #         --namespace istio-operator \
+  #         --create-namespace \
+  #         --version v1.89.0 \
+  #         kiali-operator \
+  #         kiali-operator
