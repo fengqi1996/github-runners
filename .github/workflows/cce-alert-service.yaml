@@ -9,6 +9,8 @@ on:
         options: 
         - uat
         - staging
+        - sit
+        - dev
 
 env: 
   ENVIRONMENT: ${{ github.event.inputs.environment }}
