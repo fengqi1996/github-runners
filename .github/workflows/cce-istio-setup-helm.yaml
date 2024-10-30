@@ -157,7 +157,7 @@ jobs:
     - name: Install Jaeger
       run: |
         cat istio/istio-helm-ais/output/istio-helm-ais/templates/jaeger.yaml 
-        sed -i "s/<jaegerBasicAuth>/${{ env.JAEGER_BASIC_AUTH }}/g" istio/istio-ais/pipeline/jaeger.yaml
+        sed -i "s/<jaegerBasicAuth>/${{ env.JAEGER_BASIC_AUTH }}/g" istio/istio-helm-ais/output/istio-helm-ais/templates/jaeger.yaml 
         kubectl apply -f istio/istio-helm-ais/output/istio-helm-ais/templates/jaeger.yaml 
 
     - name: Peerauthentication
