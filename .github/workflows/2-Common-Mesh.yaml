@@ -1,0 +1,182 @@
+name: 2. Common mesh
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        description: Environment
+        options: 
+        - uat
+        - staging
+        - dev
+        - sit
+      project:
+        type: choice
+        options:
+        - myais
+        - hw
+        - common
+      istioNamespace:
+        description: '<project>-istio-system / istio-system'
+        required: true
+      meshNamespace:
+        description: 'New namespace to add to the Istio mesh'
+        required: true
+
+env: 
+  ENVIRONMENT: ${{ github.event.inputs.environment }}
+  PROJECT: ${{ github.event.inputs.project }}
+  MESH_NAMESPACE: ${{ github.event.inputs.meshNamespace }}
+  istioNamespace: ${{ github.event.inputs.istioNamespace }}
+  # KUBE_API_SERVER: ${{ secrets.KUBE_API_SERVER }}
+  # KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}
+  # KUBE_CA_CERT: ${{ secrets.KUBE_CA_CERT }}
+  JAEGER_BASIC_AUTH: ${{ secrets.JAEGER_BASIC_AUTH }}
+  KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+
+jobs:
+  deploy_istio:
+    runs-on: debian
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure kubectl
+      uses: Azure/setup-kubectl@v4.0.0
+      with:
+        version: 'latest'
+
+    - name: Install Helm
+      uses: azure/setup-helm@v4.2.0        
+        
+    - name: Set up Kubeconfig
+      run: |
+        mkdir -p $HOME/.kube
+        export KUBECONFIG=$HOME/.kube/config
+        echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $KUBECONFIG
+        # if [[ "${{ github.event.inputs.environment }}" == "uat" ]]; then
+        #   echo "${{ secrets.KUBE_CONFIG_AIS_UAT }}" | base64 -d > $KUBECONFIG
+        # elif [[ "${{ github.event.inputs.environment }}" == "staging" ]]; then
+        #   echo "${{ secrets.KUBE_CONFIG_AIS_STAGING }}" | base64 -d> $KUBECONFIG
+        # else
+        #   echo "Invalid environment selection"
+        #   exit 1
+        # fi
+        # echo "${{ env.KUBE_CA_CERT }}" > $HOME/.kube/ca.crt
+        # kubectl config set-cluster k8s --server=${{ env.KUBE_API_SERVER }}  --certificate-authority=$HOME/.kube/ca.crt  --embed-certs=true --kubeconfig=$HOME/.kube/config
+        # kubectl config set-credentials admin --token=${{ env.KUBE_TOKEN }} --kubeconfig=$HOME/.kube/config
+        # kubectl config set-context k8s --cluster=k8s --user=admin --kubeconfig=$HOME/.kube/config
+        # kubectl config use-context k8s --kubeconfig=$HOME/.kube/config
+        # kubectl get pods --all-namespaces
+        kubectl version
+
+    - name: Create and Label Namespace
+      run: |
+        # Create and label istio-system namespace
+        kubectl create namespace ${{ env.istioNamespace }} || true
+        # kubectl label namespace ${{ env.istioNamespace }} pod-security.kubernetes.io/enforce=restricted
+        kubectl label namespace ${{ env.istioNamespace }} usergroup=${{ env.PROJECT }} --overwrite=true
+        # kubectl label namespace ${{ env.istioNamespace }} istio.io/rev=${{ env.PROJECT }} --overwrite=true
+
+        # Create mesh namespaces
+        IFS=',' read -ra NAMESPACES <<< "${{ env.MESH_NAMESPACE }}"
+        for namespace  in "${NAMESPACES[@]}"; do
+          kubectl create namespace $namespace  || true
+          # kubectl label namespace pod-security.kubernetes.io/enforce=restricted
+        done  
+
+        # Label mesh namespaces
+        for namespace  in "${NAMESPACES[@]}"; do
+          kubectl label namespace $namespace usergroup=${{ env.PROJECT }} --overwrite=true
+          kubectl label namespace $namespace istio.io/rev=${{ env.PROJECT }} --overwrite=true
+        done
+        
+    - name: Check Namespaces Label
+      run: |
+        kubectl get namespace -L usergroup,istio.io/rev      
+             
+    - name: Install Istio Operator
+      run: |
+        helm install istio-operator istio-operator -n istio-operator --create-namespace || true
+
+    - name: Refine Watch Namespace For Istio Operator
+      run: |
+        current_namespaces=$(helm get values istio-operator -n istio-operator --output json | jq -r '.watchedNamespaces')
+        echo "Current namespaces: $current_namespaces"
+        new_namespaces="$current_namespaces,${{ env.istioNamespace }}"
+        echo "New namespaces: $new_namespaces"
+        # Remove Duplicate Namespaces
+        updated_namespaces=$(echo $new_namespaces | tr ',' '\n' | sort | uniq | paste -sd, -)
+        echo "Updated namespaces: $updated_namespaces"
+        # Pass updated_namespaces to helm upgrade command step
+        echo "::set-output name=updated_namespaces::$updated_namespaces"
+    
+    - name: Upgrade Helm release with new watchedNamespaces
+      run: |
+        echo "Updated Namespaces: ${{ steps.update_namespaces.outputs.updated_namespaces }}"
+        helm upgrade --install istio-operator istio-operator -n istio-operator --create-namespace \
+          --set watchedNamespaces="${{ steps.update_namespaces.outputs.updated_namespaces }}"
+        current_namespaces=$(helm get values istio-operator -n istio-operator --output json | jq -r '.watchedNamespaces')
+        echo "Current namespaces: $current_namespaces"
+
+    - name: Helm Template
+      run: |
+        helm template istio/istio-helm-ais/ --values istio/istio-helm-values/${{ env.PROJECT }}.values.yaml --output-dir istio/istio-helm-ais/output
+
+    - name: Install Istiod
+      run: |
+        cat istio/istio-helm-ais/output/istio-helm-ais/templates/istio.cr.yaml
+        kubectl apply -f istio/istio-helm-ais/output/istio-helm-ais/templates/istio.cr.yaml 
+
+    - name: Install Kiali Operator
+      run: |
+        # helm repo add kiali https://kiali.org/helm-charts
+        # helm repo update
+        helm upgrade --install \
+          --namespace istio-operator \
+          --create-namespace \
+          --version v1.89.0 \
+          kiali-operator \
+          kiali-operator
+        # helm upgrade --install --namespace istio-operator --create-namespace kiali-operator kiali-operator
+    
+    - name: Provide Role and rolebidinding for Kiali Service Account
+      run: | 
+        cat istio/istio-helm-ais/output/istio-helm-ais/templates/role.yaml 
+        cat istio/istio-helm-ais/output/istio-helm-ais/templates/rolebinding.yaml 
+        kubectl apply -f istio/istio-helm-ais/output/istio-helm-ais/templates/role.yaml 
+        kubectl apply -f istio/istio-helm-ais/output/istio-helm-ais/templates/rolebinding.yaml 
+        
+    - name: Install Kiali CR
+      run: |
+        cat istio/istio-helm-ais/output/istio-helm-ais/templates/kiali.cr.yaml 
+        kubectl apply -f istio/istio-helm-ais/output/istio-helm-ais/templates/kiali.cr.yaml 
+    
+    - name: Install Jaeger
+      run: |
+        cat istio/istio-helm-ais/output/istio-helm-ais/templates/jaeger.yaml 
+        sed -i "s/<jaegerBasicAuth>/${{ env.JAEGER_BASIC_AUTH }}/g" istio/istio-helm-ais/output/istio-helm-ais/templates/jaeger.yaml 
+        kubectl apply -f istio/istio-helm-ais/output/istio-helm-ais/templates/jaeger.yaml 
+
+    - name: Peerauthentication
+      run: |
+        cat istio/istio-helm-ais/output/istio-helm-ais/templates/peerauthentication.yaml 
+        for i in {1..10}; do
+          sleep 2
+          kubectl get crd peerauthentications.security.istio.io && break
+          echo "Waiting for PeerAuthentication CRD to be ready..."
+        done
+        kubectl apply -f istio/istio-helm-ais/output/istio-helm-ais/templates/peerauthentication.yaml 
+
+    # - name: Helm Template
+    #   working-directory: ${{ github.workspace }}
+    #   run: |
+    #     helm template aistemplate --values aistemplate/environment/${{ env.PROJECT }}-${{ env.ENVIRONMENT }}.values.yaml --output-dir aistemplate/output
+
+    # - name: Create SC and SA
+    #   working-directory: ${{ github.workspace }}
+    #   run: |
+    #     cat aistemplate/output/aistemplate/templates/project-rbac.yaml
+    #     kubectl apply -f aistemplate/output/aistemplate/templates/project-rbac.yaml

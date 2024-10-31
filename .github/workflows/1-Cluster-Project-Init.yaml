@@ -1,0 +1,228 @@
+name: 1. Cluster Common, Cluster Init, Project Init
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        description: Environment
+        options: 
+        - uat
+        - staging
+        - sit
+        - dev
+      teamAdmin:
+        description: 'Team Admin ID'
+        required: true
+        type: string
+      
+env:
+  HW_ACCESS_KEY: ${{ secrets.HW_ACCESS_KEY }}
+  HW_SECRET_KEY: ${{ secrets.HW_SECRET_KEY }}
+  PASSWORD: ${{ secrets.ECS_ROOT_PWD }}
+  PROJECT_ID: ${{ secrets.PROJECT_ID }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.HW_ACCESS_KEY }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.HW_SECRET_KEY }}
+  ENVIRONMENT: ${{ github.event.inputs.environment }}
+  SMTP_PWD: ${{ secrets.SMTP_PWD }}
+  TEAM_ADMIN: ${{ github.event.inputs.teamAdmin }} # 3a8a622c17f44cf88c539fae8366751f
+
+jobs:
+  terraform:
+    name: 'Cluster Initialization'
+    runs-on: debian
+    environment: ${{ github.event.inputs.environment }}
+    outputs:
+      kubeconfig: ${{ steps.apply.outputs.kubeconfig }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+        
+    - name: 'Setup NodeJS'
+      uses: actions/setup-node@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      
+    - name: Kubectl tool installer
+      uses: Azure/setup-kubectl@v4.0.0
+      with:
+        version: latest
+
+    - name: Plan Terraform
+      working-directory: ${{ github.workspace }}/terraform
+      id: plan
+      run: |
+        terraform init
+        terraform workspace select -or-create ${{ env.ENVIRONMENT }} 
+        TF_VAR_environment=${{ env.ENVIRONMENT}} TF_VAR_secret_key=${{ env.HW_SECRET_KEY }} TF_VAR_access_key=${{ env.HW_ACCESS_KEY }} TF_VAR_password=${{ env.PASSWORD }} TF_VAR_project_ID=${{ env.PROJECT_ID }} terraform plan -var-file="./environment/${{ env.ENVIRONMENT }}/values.tfvars"
+
+    - name: Apply_Terraform
+      working-directory: ${{ github.workspace }}/terraform
+      id: apply
+      run: | 
+        TF_VAR_environment=$ENVIRONMENT TF_VAR_secret_key=$HW_SECRET_KEY TF_VAR_access_key=$HW_ACCESS_KEY TF_VAR_password=$PASSWORD TF_VAR_project_ID=$PROJECT_ID terraform apply --auto-approve -var-file="./environment/${{ env.ENVIRONMENT }}/values.tfvars"
+        mkdir -p $HOME/.kube
+        export KUBECONFIG=$HOME/.kube/config
+        KUBE_CONFIG=$(terraform output -raw kube-config)
+        echo $KUBE_CONFIG > $HOME/.kube/config
+        # kubectl config use-context internal
+        kubectl get pods --all-namespaces
+        # KUBE_CONFIG_BASE64=$(echo $KUBE_CONFIG | base64)
+        echo "kubeconfig<<EOF" >> $GITHUB_OUTPUT
+        cat $HOME/.kube/config >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
+    - name: Binding permission for cluster role admin
+      run: | 
+        kubectl apply -f - <<EOF
+        apiVersion: rbac.authorization.k8s.io/v1
+        kind: ClusterRoleBinding
+        metadata:
+          annotations:
+            CCE.com/IAM: "true"
+          name: clusterrole_cluster-admin_user369a247a13464a27afa98544ef4aa96b # Agency Name
+        roleRef:
+          apiGroup: rbac.authorization.k8s.io
+          kind: ClusterRole
+          name: cluster-admin
+        subjects:
+        - apiGroup: rbac.authorization.k8s.io
+          kind: User
+          name: 369a247a13464a27afa98544ef4aa96b
+
+    - name: Binding permission for team admin
+      run: | 
+        kubectl apply -f - <<EOF
+        apiVersion: rbac.authorization.k8s.io/v1
+        kind: ClusterRoleBinding
+        metadata:
+          annotations:
+            CCE.com/IAM: "true"
+          name: clusterrole_cluster-admin_user${{ env.TEAM_ADMIN }} # Agency Name
+        roleRef:
+          apiGroup: rbac.authorization.k8s.io
+          kind: ClusterRole
+          name: cluster-admin
+        subjects:
+        - apiGroup: rbac.authorization.k8s.io
+          kind: User
+          name: ${{ env.TEAM_ADMIN }}
+        
+  cluster-common:
+    name: 'Cluster Common'
+    needs: terraform
+    runs-on: debian
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+        
+    - name: Set up Helm
+      uses: azure/setup-helm@v4.2.0
+      id: install
+
+    - name: Kubectl tool installer
+      uses: Azure/setup-kubectl@v4.0.0
+      with:
+        version: latest
+
+    - name: Setup Cluster Secrets
+      run: |
+        echo '${{ needs.terraform.outputs.kubeconfig }}' > $HOME/.kube/config
+        kubectl get pods --all-namespaces
+
+    - name: Helm Template
+      working-directory: ${{ github.workspace }}
+      run: |
+        helm template prometheus/prometheus-ais --namespace monitoring --values prometheus/environment/${{ env.ENVIRONMENT }}.values.yaml --output-dir prometheus/prometheus-ais/output
+        cat prometheus/prometheus-ais/output/prometheus-ais/templates/prometheus.rules.yaml
+        cat prometheus/prometheus-ais/output/prometheus-ais/templates/alertrule.secret.yaml
+        cat prometheus/prometheus-ais/output/prometheus-ais/templates/prometheus.yaml
+        cat prometheus/prometheus-ais/output/prometheus-ais/templates/grafana-service.yaml
+        cat prometheus/prometheus-ais/output/prometheus-ais/templates/storage-class.yaml
+
+    - name: Create Storage Class
+      working-directory: ${{ github.workspace }}
+      run: |
+        cat prometheus/prometheus-ais/output/prometheus-ais/templates/storage-class.yaml
+        kubectl apply -f prometheus/prometheus-ais/output/prometheus-ais/templates/storage-class.yaml
+
+    - name: Apply Configured Yaml File
+      working-directory: ${{ github.workspace }}
+      run: |
+        sed -i 's/smtppassword/${{ env.SMTP_PWD }}/g' prometheus/prometheus-ais/output/prometheus-ais/templates/alertrule.secret.yaml
+        kubectl apply -f prometheus/prometheus-ais/output/prometheus-ais/templates/alertrule.secret.yaml
+        kubectl apply -f prometheus/prometheus-ais/output/prometheus-ais/templates/prometheus.rules.yaml
+        kubectl apply -f prometheus/prometheus-ais/output/prometheus-ais/templates/prometheus.yaml
+        kubectl apply -f prometheus/prometheus-ais/output/prometheus-ais/templates/grafana-service.yaml
+        kubectl rollout restart statefulset prometheus-server -n monitoring
+
+  project-initialize:
+    name: 'Project Initialization'
+    needs: cluster-common
+    runs-on: debian
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+        
+    - name: Set up Helm
+      uses: azure/setup-helm@v4.2.0
+      id: install
+
+    - name: Kubectl tool installer
+      uses: Azure/setup-kubectl@v4.0.0
+      with:
+        version: latest
+        
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+
+    - name: Plan Terraform
+      working-directory: ${{ github.workspace }}/terraform
+      id: plan
+      run: |
+        terraform init
+        terraform workspace select -or-create ${{ env.ENVIRONMENT }} 
+
+    - name: Setup Cluster Secrets
+      run: |
+        # echo '${{ needs.terraform.outputs.kubeconfig }}' > $HOME/.kube/config
+        # kubectl get pods --all-namespaces
+        export KUBECONFIG=$HOME/.kube/config
+        KUBE_CONFIG=$(terraform output -raw kube-config)
+        echo $KUBE_CONFIG > $HOME/.kube/config
+             
+    - name: Install Istio Operator
+      run: |
+        helm install istio-operator istio-operator -n istio-operator --create-namespace || true
+
+    - name: Refine Watch Namespace For Istio Operator
+      run: |
+        current_namespaces=$(helm get values istio-operator -n istio-operator --output json | jq -r '.watchedNamespaces')
+        echo "Current namespaces: $current_namespaces"
+        new_namespaces="$current_namespaces,${{ env.istioNamespace }}"
+        echo "New namespaces: $new_namespaces"
+        # Remove Duplicate Namespaces
+        updated_namespaces=$(echo $new_namespaces | tr ',' '\n' | sort | uniq | paste -sd, -)
+        echo "Updated namespaces: $updated_namespaces"
+        # Pass updated_namespaces to helm upgrade command step
+        echo "::set-output name=updated_namespaces::$updated_namespaces"
+    
+    - name: Upgrade Helm release with new watchedNamespaces
+      run: |
+        echo "Updated Namespaces: ${{ steps.update_namespaces.outputs.updated_namespaces }}"
+        helm upgrade --install istio-operator istio-operator -n istio-operator --create-namespace \
+          --set watchedNamespaces="${{ steps.update_namespaces.outputs.updated_namespaces }}"
+        current_namespaces=$(helm get values istio-operator -n istio-operator --output json | jq -r '.watchedNamespaces')
+        echo "Current namespaces: $current_namespaces"
+
+    - name: Install Kiali Operator
+      run: |
+        helm upgrade --install \
+          --namespace istio-operator \
+          --create-namespace \
+          --version v1.89.0 \
+          kiali-operator \
+          kiali-operator
