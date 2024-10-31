@@ -7,6 +7,7 @@ spec:
   profile: default
   revision: {{ .Values.meshName }}
   meshConfig:
+    accessLogFile: /dev/stdout
     discoverySelectors:
       - matchLabels:
           usergroup: {{ .Values.meshName }}

@@ -168,8 +168,11 @@ jobs:
           kubectl get crd peerauthentications.security.istio.io && break
           echo "Waiting for PeerAuthentication CRD to be ready..."
         done
+        kubectl wait --for=condition=established --timeout=60s crd/peerauthentications.security.istio.io
+        
+    - name: Apply Peerauthentication
+      run: |
         kubectl apply -f istio/istio-helm-ais/output/istio-helm-ais/templates/peerauthentication.yaml 
-
     # - name: Helm Template
     #   working-directory: ${{ github.workspace }}
     #   run: |
