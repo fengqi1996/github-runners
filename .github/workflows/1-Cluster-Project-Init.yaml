@@ -114,6 +114,8 @@ jobs:
     needs: terraform
     runs-on: debian
     environment: ${{ github.event.inputs.environment }}
+    outputs:
+      kubeconfig: ${{ steps.apply.outputs.kubeconfig }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -131,6 +133,9 @@ jobs:
       run: |
         echo '${{ needs.terraform.outputs.kubeconfig }}' > $HOME/.kube/config
         kubectl get pods --all-namespaces
+        echo "kubeconfig<<EOF" >> $GITHUB_OUTPUT
+        cat $HOME/.kube/config >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
 
     - name: Helm Template
       working-directory: ${{ github.workspace }}
@@ -190,9 +195,9 @@ jobs:
       run: |
         # echo '${{ needs.terraform.outputs.kubeconfig }}' > $HOME/.kube/config
         # kubectl get pods --all-namespaces
-        export KUBECONFIG=$HOME/.kube/config
-        KUBE_CONFIG=$(terraform output -raw kube-config)
-        echo $KUBE_CONFIG > $HOME/.kube/config
+        echo '${{ needs.cluster-common.outputs.kubeconfig }}' > $HOME/.kube/config
+        # KUBE_CONFIG=$(terraform output -raw kube-config)
+        # echo $KUBE_CONFIG > $HOME/.kube/config
         kubectl get pods --all-namespaces
              
     - name: Install Istio Operator
