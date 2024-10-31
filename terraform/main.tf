@@ -421,7 +421,7 @@ resource "huaweicloud_vpc_route" "vpc_route_er_1" {
   destination    = "172.16.0.0/12"
   type           = "er"
   nexthop        = "5bb5286e-38c7-456b-9918-412277905e4d"
-  depends_on     = [ huaweicloud_vpc.cce-vpc, huaweicloud_vpc_subnet.cce-subnet, huaweicloud_vpc_route.vpc_route_er_2  ]
+  depends_on     = [ huaweicloud_vpc.cce-vpc, huaweicloud_vpc_subnet.cce-subnet, huaweicloud_vpc_route.vpc_route_er_2,  huaweicloud_er_vpc_attachment.test  ]
 }
 resource "huaweicloud_vpc_route" "vpc_route_er_2" {
   vpc_id         = huaweicloud_vpc.cce-vpc.id
@@ -429,7 +429,7 @@ resource "huaweicloud_vpc_route" "vpc_route_er_2" {
   destination    = "10.0.0.0/8"
   type           = "er"
   nexthop        = "5bb5286e-38c7-456b-9918-412277905e4d"
-  depends_on     = [ huaweicloud_vpc.cce-vpc, huaweicloud_vpc_subnet.cce-subnet, huaweicloud_vpc_route.vpc_route_er_3  ]
+  depends_on     = [ huaweicloud_vpc.cce-vpc, huaweicloud_vpc_subnet.cce-subnet, huaweicloud_vpc_route.vpc_route_er_3, huaweicloud_er_vpc_attachment.test  ]
 }
 resource "huaweicloud_vpc_route" "vpc_route_er_3" {
   vpc_id         = huaweicloud_vpc.cce-vpc.id
@@ -437,7 +437,7 @@ resource "huaweicloud_vpc_route" "vpc_route_er_3" {
   destination    = "192.168.0.0/16"
   type           = "er"
   nexthop        = "5bb5286e-38c7-456b-9918-412277905e4d"
-  depends_on     = [ huaweicloud_vpc.cce-vpc, huaweicloud_vpc_subnet.cce-subnet, huaweicloud_vpc_route.vpc_route_er_4  ]
+  depends_on     = [ huaweicloud_vpc.cce-vpc, huaweicloud_vpc_subnet.cce-subnet, huaweicloud_vpc_route.vpc_route_er_4, huaweicloud_er_vpc_attachment.test  ]
 }
 resource "huaweicloud_vpc_route" "vpc_route_er_4" {
   vpc_id         = huaweicloud_vpc.cce-vpc.id
@@ -445,7 +445,7 @@ resource "huaweicloud_vpc_route" "vpc_route_er_4" {
   destination    = "0.0.0.0/0"
   type           = "er"
   nexthop        = "5bb5286e-38c7-456b-9918-412277905e4d"
-  depends_on     = [ huaweicloud_vpc.cce-vpc, huaweicloud_vpc_subnet.cce-subnet  ]
+  depends_on     = [ huaweicloud_vpc.cce-vpc, huaweicloud_vpc_subnet.cce-subnet, huaweicloud_er_vpc_attachment.test  ]
 }
 
 # resource "huaweicloud_vpc_eip" "cce-nat-eip" {
