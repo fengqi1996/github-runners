@@ -172,7 +172,9 @@ jobs:
         
     - name: Apply Peerauthentication
       run: |
-        kubectl apply -f istio/istio-helm-ais/output/istio-helm-ais/templates/peerauthentication.yaml 
+        kubectl apply -f istio/istio-helm-ais/output/istio-helm-ais/templates/peerauthentication.yaml || true
+        sleep 2
+        kubectl apply -f istio/istio-helm-ais/output/istio-helm-ais/templates/peerauthentication.yaml
     # - name: Helm Template
     #   working-directory: ${{ github.workspace }}
     #   run: |
