@@ -8,14 +8,14 @@ kind: Service
 metadata:
   name: sleep
   labels:
-    app: sleep
+    app: sleep-hw-micro-2
     service: sleep
 spec:
   ports:
   - port: 80
     name: http
   selector:
-    app: sleep
+    app: sleep-hw-micro-2
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -25,11 +25,11 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: sleep
+      app: sleep-hw-micro-2
   template:
     metadata:
       labels:
-        app: sleep
+        app: sleep-hw-micro-2
     spec:
       terminationGracePeriodSeconds: 0
       serviceAccountName: sleep
@@ -57,7 +57,7 @@ kind: Service
 metadata:
   name: httpbin
   labels:
-    app: httpbin
+    app: httpbin-hw-micro-2
     service: httpbin
 spec:
   ports:
@@ -65,7 +65,7 @@ spec:
     port: 8000
     targetPort: 80
   selector:
-    app: httpbin
+    app: httpbin-hw-micro-2
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -75,12 +75,12 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: httpbin
+      app: httpbin-hw-micro-2
       version: v1
   template:
     metadata:
       labels:
-        app: httpbin
+        app: httpbin-hw-micro-2
         version: v1
     spec:
       serviceAccountName: httpbin
