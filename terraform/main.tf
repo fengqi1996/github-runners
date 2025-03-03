@@ -12,7 +12,7 @@ variable "password" {
 
 variable "availability_zone" {
   type = string
-  default = "ap-southeast-2"
+  default = "ap-southeast-3"
 }
 
 variable "environment" {
@@ -22,7 +22,7 @@ variable "environment" {
 
 variable "obs-bucket" {
   type = string
-  default = "lts-bucket-ais"
+  default = "lts-ais-test"
 }
 
 variable "lts-group" {
@@ -112,19 +112,19 @@ resource "huaweicloud_cce_cluster" "huawei-cce" {
   cluster_version        = "v1.28"
   enterprise_project_id  = "861dea44-2f5c-4b2a-82da-9fcd1919afbf"
   masters {
-    availability_zone = "ap-southeast-2a"
+    availability_zone = "ap-southeast-3a"
   }
   masters {
-    availability_zone = "ap-southeast-2b"
+    availability_zone = "ap-southeast-3b"
   }
   masters {
-    availability_zone = "ap-southeast-2c"
+    availability_zone = "ap-southeast-3c"
   }
 }
 
 
 data "huaweicloud_availability_zones" "cce-az" {
-  region = "ap-southeast-2"
+  region = "ap-southeast-3"
 }
 
 resource "huaweicloud_cce_node" "cce-node" {
@@ -242,8 +242,8 @@ resource "huaweicloud_elb_loadbalancer" "cce-elb-ingress" {
   ipv4_eip_id    = huaweicloud_vpc_eip.dedicated.id
 
   availability_zone = [
-    "ap-southeast-2a",
-    "ap-southeast-2b",
+    "ap-southeast-3a",
+    "ap-southeast-3b",
   ]
 
   enterprise_project_id = "861dea44-2f5c-4b2a-82da-9fcd1919afbf"
