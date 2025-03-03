@@ -49,10 +49,10 @@ provider "huaweicloud" {
 terraform {
   backend "s3" {
     # Reference: https://registry.terraform.io/providers/huaweicloud/hcso/latest/docs/guides/remote-state-backend
-    bucket   = "ais-pipeline"
+    bucket   = "ais-test-jy"
     key      = "terraform.tfstate"
-    region   = "ap-southeast-2"
-    endpoint = "https://obs.ap-southeast-2.myhuaweicloud.com"
+    region   = "ap-southeast-3"
+    endpoint = "https://obs.ap-southeast-3.myhuaweicloud.com"
 
     skip_region_validation      = true
     skip_credentials_validation = true
@@ -71,7 +71,7 @@ terraform {
 resource "huaweicloud_vpc" "cce-vpc" {
   name                  = "cce-vpc-${var.environment}-${random_string.random_suffix.result}"
   cidr                  = var.vpc-cidr
-  enterprise_project_id = "a57b0820-2a2b-4b14-8477-3518695cad25"
+  enterprise_project_id = "861dea44-2f5c-4b2a-82da-9fcd1919afbf"
 }
 
 resource "huaweicloud_vpc_subnet" "cce-subnet" {
@@ -110,7 +110,7 @@ resource "huaweicloud_cce_cluster" "huawei-cce" {
   }
   # eip                    = huaweicloud_vpc_eip.cce-control-plane-eip.address
   cluster_version        = "v1.28"
-  enterprise_project_id  = "a57b0820-2a2b-4b14-8477-3518695cad25"
+  enterprise_project_id  = "861dea44-2f5c-4b2a-82da-9fcd1919afbf"
   masters {
     availability_zone = "ap-southeast-2a"
   }
@@ -200,7 +200,7 @@ resource "huaweicloud_cce_addon" "cie-collector" {
       jsondecode(data.huaweicloud_cce_addon_template.cie-collector.spec).parameters.custom,
       {
         cluster_id = huaweicloud_cce_cluster.huawei-cce.id
-        tenant_id  = "a57b0820-2a2b-4b14-8477-3518695cad25"
+        tenant_id  = "861dea44-2f5c-4b2a-82da-9fcd1919afbf"
         retention  = "1d"
         enable_nodeAffinity=true
         shards = 2
@@ -246,7 +246,7 @@ resource "huaweicloud_elb_loadbalancer" "cce-elb-ingress" {
     "ap-southeast-2b",
   ]
 
-  enterprise_project_id = "a57b0820-2a2b-4b14-8477-3518695cad25"
+  enterprise_project_id = "861dea44-2f5c-4b2a-82da-9fcd1919afbf"
 }
 data "huaweicloud_cce_addon_template" "nginx-ingress" {
   cluster_id = huaweicloud_cce_cluster.huawei-cce.id
@@ -420,7 +420,7 @@ resource "huaweicloud_vpc_route" "vpc_route_er_1" {
   # route_table_id = huaweicloud_vpc_route_table.route_table_er.id
   destination    = "172.16.0.0/12"
   type           = "er"
-  nexthop        = "5bb5286e-38c7-456b-9918-412277905e4d"
+  nexthop        = "fb79b1e5-937e-45c0-a548-cd48ee1c6f23"
   depends_on     = [ huaweicloud_vpc.cce-vpc, huaweicloud_vpc_subnet.cce-subnet, huaweicloud_vpc_route.vpc_route_er_2,  huaweicloud_er_vpc_attachment.test  ]
 }
 resource "huaweicloud_vpc_route" "vpc_route_er_2" {
@@ -428,7 +428,7 @@ resource "huaweicloud_vpc_route" "vpc_route_er_2" {
   # route_table_id = huaweicloud_vpc_route_table.route_table_er.id
   destination    = "10.0.0.0/8"
   type           = "er"
-  nexthop        = "5bb5286e-38c7-456b-9918-412277905e4d"
+  nexthop        = "fb79b1e5-937e-45c0-a548-cd48ee1c6f23"
   depends_on     = [ huaweicloud_vpc.cce-vpc, huaweicloud_vpc_subnet.cce-subnet, huaweicloud_vpc_route.vpc_route_er_3, huaweicloud_er_vpc_attachment.test  ]
 }
 resource "huaweicloud_vpc_route" "vpc_route_er_3" {
@@ -436,7 +436,7 @@ resource "huaweicloud_vpc_route" "vpc_route_er_3" {
   # route_table_id = huaweicloud_vpc_route_table.route_table_er.id
   destination    = "192.168.0.0/16"
   type           = "er"
-  nexthop        = "5bb5286e-38c7-456b-9918-412277905e4d"
+  nexthop        = "fb79b1e5-937e-45c0-a548-cd48ee1c6f23"
   depends_on     = [ huaweicloud_vpc.cce-vpc, huaweicloud_vpc_subnet.cce-subnet, huaweicloud_vpc_route.vpc_route_er_4, huaweicloud_er_vpc_attachment.test  ]
 }
 resource "huaweicloud_vpc_route" "vpc_route_er_4" {
@@ -444,7 +444,7 @@ resource "huaweicloud_vpc_route" "vpc_route_er_4" {
   # route_table_id = huaweicloud_vpc_route_table.route_table_er.id
   destination    = "0.0.0.0/0"
   type           = "er"
-  nexthop        = "5bb5286e-38c7-456b-9918-412277905e4d"
+  nexthop        = "fb79b1e5-937e-45c0-a548-cd48ee1c6f23"
   depends_on     = [ huaweicloud_vpc.cce-vpc, huaweicloud_vpc_subnet.cce-subnet, huaweicloud_er_vpc_attachment.test  ]
 }
 
