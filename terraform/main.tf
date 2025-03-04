@@ -396,22 +396,22 @@ resource "huaweicloud_lts_transfer" "lts-obs-transfer" {
 #   route {
 #     destination = "172.16.0.0/12"
 #     type        = "er"
-#     nexthop     = "5bb5286e-38c7-456b-9918-412277905e4d"
+#     nexthop     = "fb79b1e5-937e-45c0-a548-cd48ee1c6f23"
 #   }
 #   route {
 #     destination = "10.0.0.0/8"
 #     type        = "er"
-#     nexthop     = "5bb5286e-38c7-456b-9918-412277905e4d"
+#     nexthop     = "fb79b1e5-937e-45c0-a548-cd48ee1c6f23"
 #   }
 #   route {
 #     destination = "192.168.0.0/16"
 #     type        = "er"
-#     nexthop     = "5bb5286e-38c7-456b-9918-412277905e4d"
+#     nexthop     = "fb79b1e5-937e-45c0-a548-cd48ee1c6f23"
 #   }
 #   route {
 #     destination = "0.0.0.0/0"
 #     type        = "er"
-#     nexthop     = "5bb5286e-38c7-456b-9918-412277905e4d"
+#     nexthop     = "fb79b1e5-937e-45c0-a548-cd48ee1c6f23"
 #   }
 # }
 
@@ -483,7 +483,7 @@ resource "huaweicloud_vpc_route" "vpc_route_er_4" {
 
 
 resource "huaweicloud_er_vpc_attachment" "test" {
-  instance_id = "5bb5286e-38c7-456b-9918-412277905e4d"
+  instance_id = "fb79b1e5-937e-45c0-a548-cd48ee1c6f23"
   vpc_id      = huaweicloud_vpc.cce-vpc.id
   subnet_id   = huaweicloud_vpc_subnet.cce-subnet.id
   name        = "hw-cce-bbk-attachment"
